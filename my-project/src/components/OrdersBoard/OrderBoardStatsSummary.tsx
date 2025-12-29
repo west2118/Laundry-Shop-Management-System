@@ -1,11 +1,16 @@
 import React from "react";
-import type { OrderColumnType } from "../../lib/types";
+import type { OrderColumnType, OrderType } from "../../lib/types";
+import OrderBoardStatsSummarySkeleton from "../SkeletonLoading/OrderBoardStatsSummarySkeleton";
 
 const OrderBoardStatsSummary = ({
   columns,
+  orders,
 }: {
   columns: OrderColumnType[];
+  orders: OrderType[];
 }) => {
+  if (!orders) return <OrderBoardStatsSummarySkeleton />;
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
       {columns.map((column) => {

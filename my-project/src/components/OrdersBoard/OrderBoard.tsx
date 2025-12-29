@@ -14,6 +14,7 @@ import axios from "axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { getStatusBadge } from "../../lib/utils";
+import OrderBoardSkeleton from "../SkeletonLoading/OrderBoardSkeleton";
 
 type OrderBoardProps = {
   columns: OrderColumnType[];
@@ -75,6 +76,7 @@ const OrderBoard = ({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["order-data"] });
+      queryClient.invalidateQueries({ queryKey: ["order-board-data"] });
     },
     onError: () => {
       toast.error("Something went wrong");
@@ -94,6 +96,8 @@ const OrderBoard = ({
     setDraggedOrder(null);
     setDragOverColumn(null);
   };
+
+  if (!orders) return <OrderBoardSkeleton />;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

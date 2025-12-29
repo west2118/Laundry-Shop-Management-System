@@ -10,3 +10,10 @@ export const dateConvert = (date?: string) => {
 
   return formattedDate;
 };
+
+export const statusColor = [
+  { label: "Pending", color: "#FACC15" },
+  { label: "Ready", color: "#22C55E" },
+  { label: "Picked Up", color: "#3B82F6" },
+  { label: "Total Orders", color: "#A855F7" },
+];

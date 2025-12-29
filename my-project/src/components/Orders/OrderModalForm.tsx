@@ -225,6 +225,7 @@ const OrderModalForm = ({
       isCloseModal();
       toast.success(response.message);
       queryClient.invalidateQueries({ queryKey: ["order-data"] });
+      queryClient.invalidateQueries({ queryKey: ["order-board-data"] });
     },
     onError: () => {
       toast.error("Something went wrong");

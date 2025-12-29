@@ -115,3 +115,22 @@ export const getPaymentStatusBadge = (status: string) => {
     }
   );
 };
+
+export const serviceColor = [
+  {
+    name: "Wash Only",
+    color: "#3B82F6",
+  },
+  {
+    name: "Dry Clean",
+    color: "#22C55E",
+  },
+  {
+    name: "Wash & Dry",
+    color: "#A855F7",
+  },
+  {
+    name: "Premium",
+    color: "#F97316",
+  },
+];

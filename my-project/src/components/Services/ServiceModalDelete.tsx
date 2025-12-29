@@ -47,6 +47,7 @@ const ModalDelete = ({
         queryClient.invalidateQueries({ queryKey: ["customers"] });
       } else if (title === "Order") {
         queryClient.invalidateQueries({ queryKey: ["order-data"] });
+        queryClient.invalidateQueries({ queryKey: ["order-board-data"] });
       }
     },
     onError: () => {

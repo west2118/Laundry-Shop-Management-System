@@ -17,6 +17,7 @@ import type { OrderColumnType, OrderType } from "../lib/types";
 import OrderModalDetails from "../components/Orders/OrderModalDetails";
 import OrderModalForm from "../components/Orders/OrderModalForm";
 import ModalDelete from "../components/Services/ServiceModalDelete";
+import OrderBoardStatsSummarySkeleton from "../components/SkeletonLoading/OrderBoardStatsSummarySkeleton";
 
 const OrdersBoardPage = () => {
   const token = useUserStore((state) => state.userToken);
@@ -27,12 +28,12 @@ const OrdersBoardPage = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["order-data"],
+    queryKey: ["order-board-data"],
     queryFn: async () => {
       if (!token) return null;
 
       const [orderRes, customersRes, servicesRes] = await Promise.all([
-        axios.get("http://localhost:8080/api/v1/order", {
+        axios.get("http://localhost:8080/api/v1/order-today", {
           headers: { Authorization: `Bearer ${token}` },
         }),
         axios.get("http://localhost:8080/api/v1/customer", {
@@ -132,10 +133,6 @@ const OrdersBoardPage = () => {
             </p>
           </div>
           <div className="mt-4 md:mt-0 flex space-x-3">
-            <button className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition flex items-center">
-              <Filter className="mr-2 h-4 w-4" />
-              Filter
-            </button>
             <button
               onClick={() => setIsOrderFormModalOpen(true)}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition flex items-center">
@@ -146,7 +143,7 @@ const OrdersBoardPage = () => {
         </div>
 
         {/* Stats Summary */}
-        <OrderBoardStatsSummary columns={columns} />
+        <OrderBoardStatsSummary columns={columns} orders={data?.orders} />
       </div>
 
       {/* Drag and Drop Board */}

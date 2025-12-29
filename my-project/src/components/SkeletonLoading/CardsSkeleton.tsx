@@ -19,8 +19,6 @@ const CardsSkeleton = () => {
               <div className="w-12 h-12 bg-gray-200 rounded-lg animate-pulse"></div>
             </div>
           </div>
-          {/* Optional: Add a subtle shimmer effect */}
-          <div className="mt-2 h-2 bg-gray-100 rounded animate-pulse"></div>
         </div>
       ))}
     </div>

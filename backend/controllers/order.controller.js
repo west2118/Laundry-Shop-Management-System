@@ -1,6 +1,11 @@
 import Customer from "../models/customer.model.js";
 import Order from "../models/order.model.js";
 import User from "../models/user.model.js";
+import {
+  fillWeekDays,
+  getTodayRange,
+  getWeekRange,
+} from "../utils/date.utils.js";
 
 export const postOrder = async (req, res) => {
   try {
@@ -65,6 +70,40 @@ export const getAllOrders = async (req, res) => {
 
     res.status(200).json(orders);
   } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const getAllOrdersBoard = async (req, res) => {
+  try {
+    const { uid } = req.user;
+    const { start, end } = getTodayRange();
+
+    const user = await User.findOne({ uid });
+    if (!user) {
+      return res.status(400).json({ message: "User didn't exist" });
+    }
+
+    const orders = await Order.find({
+      $or: [
+        {
+          createdAt: {
+            $gte: start,
+            $lt: end,
+          },
+        },
+
+        {
+          orderStatus: { $in: ["pending", "in-process", "ready"] },
+        },
+      ],
+    })
+      .populate("customer", "fullName email")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(orders);
+  } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
@@ -164,9 +203,110 @@ export const updateOrderStatus = async (req, res) => {
   }
 };
 
-export const getDashboardStats = async (req, res) => {
+export const getWeeklyRevenue = async (req, res) => {
   try {
+    const { monday, sunday } = getWeekRange();
+
+    const rawData = await Order.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: monday,
+            $lt: sunday,
+          },
+          paymentStatus: "paid",
+        },
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$createdAt",
+              timezone: "+08:00",
+            },
+          },
+          totalAmount: { $sum: "$totalAmount" },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    const weeklyData = fillWeekDays(rawData, monday);
+
+    res.status(200).json(weeklyData);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Failed to load dashboard stats" });
+  }
+};
+
+export const getWeeklyServiceTypes = async (req, res) => {
+  try {
+    const { monday, sunday } = getWeekRange();
+
+    const data = await Order.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: monday,
+            $lt: sunday,
+          },
+          paymentStatus: "paid",
+        },
+      },
+      { $unwind: "$items" },
+      {
+        $group: {
+          _id: "$items.serviceName",
+          total: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          name: "$_id",
+          total: 1,
+        },
+      },
+      {
+        $sort: { total: -1 },
+      },
+    ]);
+
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to load dashboard stats" });
+  }
+};
+
+export const getRecentOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({})
+      .populate("customer", "fullName")
+      .limit(4)
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(orders);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to load dashboard stats" });
+  }
+};
+
+export const getWeeklyOrderStatus = async (req, res) => {
+  try {
+    const { monday, sunday } = getWeekRange();
+
     const stats = await Order.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: monday,
+            $lt: sunday,
+          },
+          paymentStatus: "paid",
+        },
+      },
       {
         $group: {
           _id: "$orderStatus",
@@ -187,6 +327,7 @@ export const getDashboardStats = async (req, res) => {
 
       if (item._id === "pending") result.pending = item.count;
       if (item._id === "ready") result.ready = item.count;
+      if (item._id === "in-progress") result.ready = item.count;
       if (item._id === "picked-up") result.pickedUp = item.count;
     });
 
