@@ -31,6 +31,8 @@ export type CustomerType = {
   fullName: string;
   email: string;
   contact: string;
+  totalOrders?: number;
+  totalSpent?: number;
   createdAt: string;
   updatedAt: string;
   __v: number;

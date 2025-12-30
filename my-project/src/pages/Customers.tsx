@@ -20,12 +20,6 @@ const Customers = () => {
     null
   );
 
-  const { data, isError, isLoading } = useQuery<CustomerType[]>({
-    queryKey: ["customers"],
-    queryFn: fetchData("http://localhost:8080/api/v1/customer", token),
-    enabled: !!token,
-  });
-
   const handleSelectCustomer = (
     customer: CustomerType,
     action: "edit" | "delete" | "details"
@@ -78,15 +72,9 @@ const Customers = () => {
             Add New Customer
           </button>
         </div>
-
-        {/* Stats Summary */}
-        <StatsSummaryCards />
       </div>
 
-      <CustomersTable
-        customers={data ?? null}
-        handleSelectCustomer={handleSelectCustomer}
-      />
+      <CustomersTable handleSelectCustomer={handleSelectCustomer} />
 
       {isCustomerFormModal && (
         <CustomerModalForm
@@ -101,7 +89,7 @@ const Customers = () => {
       {isCustomerDetailsModal && (
         <CustomerDetailsModal
           isModalOpen={isCustomerDetailsModal}
-          isCloseModal={closeDeleteModal}
+          isCloseModal={closeCustomerDetailsModal}
           selectedCustomer={selectedCustomer ?? null}
         />
       )}

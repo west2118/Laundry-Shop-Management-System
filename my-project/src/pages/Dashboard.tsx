@@ -80,7 +80,7 @@ const LaundryDashboard = () => {
         <DashboardStatsSummary ordersStats={data?.ordersStats} />
 
         {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 my-8">
           {/* Revenue Chart */}
           <DashboardRevenueChart weeklyRevenueData={data?.orderRevenue} />
 

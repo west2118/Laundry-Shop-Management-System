@@ -6,6 +6,7 @@ import {
   getTodayRange,
   getWeekRange,
 } from "../utils/date.utils.js";
+import { parseAndBuildQuery } from "../utils/query.utils.js";
 
 export const postOrder = async (req, res) => {
   try {
@@ -66,10 +67,35 @@ export const getAllOrders = async (req, res) => {
       return res.status(400).json({ message: "User didn't exist" });
     }
 
-    const orders = await Order.find({}).populate("customer", "fullName email");
+    const { page, limit, skip, search, status } = parseAndBuildQuery(req);
 
-    res.status(200).json(orders);
+    const query = {};
+    if (search) {
+      query.$or = [
+        { paymentStatus: { $regex: search, $options: "i" } },
+        { orderStatus: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    if (status) {
+      query.orderStatus = status;
+    }
+
+    const total = await Order.countDocuments(query);
+    const orders = await Order.find(query)
+      .skip(skip)
+      .limit(limit)
+      .populate("customer", "fullName email")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      orders,
+      page,
+      total,
+      totalPages: Math.ceil(total / limit),
+    });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
@@ -333,6 +359,59 @@ export const getWeeklyOrderStatus = async (req, res) => {
 
     res.status(200).json(result);
   } catch (error) {
+    res.status(500).json({ message: "Failed to load dashboard stats" });
+  }
+};
+
+export const getOrdersStatsData = async (req, res) => {
+  try {
+    const { start, end } = getTodayRange();
+
+    const [data] = await Order.aggregate([
+      {
+        $facet: {
+          totalOrders: [{ $count: "count" }],
+
+          todayOrders: [
+            {
+              $match: {
+                createdAt: { $gte: start, $lt: end },
+              },
+            },
+            { $count: "count" },
+          ],
+
+          revenueToday: [
+            {
+              $match: {
+                createdAt: { $gte: start, $lt: end },
+                paymentStatus: "paid",
+              },
+            },
+            {
+              $group: {
+                _id: null,
+                revenue: { $sum: "$totalAmount" },
+              },
+            },
+          ],
+
+          customers: [
+            { $group: { _id: "$customer" } },
+            { $group: { _id: null, totalCustomers: { $sum: 1 } } },
+          ],
+        },
+      },
+    ]);
+
+    res.status(200).json({
+      totalOrders: data.totalOrders[0]?.count || 0,
+      todayOrders: data.todayOrders[0]?.count || 0,
+      revenueToday: data.revenueToday[0]?.revenue || 0,
+      totalCustomers: data.customers[0]?.totalCustomers || 0,
+    });
+  } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Failed to load dashboard stats" });
   }
 };

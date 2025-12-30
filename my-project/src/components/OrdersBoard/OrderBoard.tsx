@@ -75,8 +75,9 @@ const OrderBoard = ({
       );
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["order-data"] });
+      queryClient.invalidateQueries({ queryKey: ["order-stats-data"] });
       queryClient.invalidateQueries({ queryKey: ["order-board-data"] });
+      queryClient.invalidateQueries({ queryKey: ["orders-data"] });
     },
     onError: () => {
       toast.error("Something went wrong");

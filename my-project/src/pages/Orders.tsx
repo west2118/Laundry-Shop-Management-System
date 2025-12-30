@@ -1,18 +1,5 @@
-import React, { useState } from "react";
-import {
-  Package,
-  Plus,
-  Filter,
-  Calendar,
-  Clock,
-  DollarSign,
-  Truck,
-  CheckCircle,
-  RefreshCw,
-  TrendingUp,
-  PackageOpen,
-  Loader,
-} from "lucide-react";
+import { useState } from "react";
+import { Package, Plus, Filter } from "lucide-react";
 import { useUserStore } from "../stores/useUserStore";
 import OrderModalForm from "../components/Orders/OrderModalForm";
 import OrderModalDetails from "../components/Orders/OrderModalDetails";
@@ -22,6 +9,8 @@ import axios from "axios";
 import OrderStatsSummary from "../components/Orders/OrderStatsSummary";
 import type { OrderType } from "../lib/types";
 import ModalDelete from "../components/Services/ServiceModalDelete";
+import { fetchData } from "../lib/utils";
+import { useDebounceInput } from "../hooks/useDebounceInput";
 
 const OrdersPage = () => {
   const token = useUserStore((state) => state.userToken);
@@ -32,12 +21,12 @@ const OrdersPage = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["order-data"],
+    queryKey: ["order-stats-data"],
     queryFn: async () => {
       if (!token) return null;
 
-      const [orderRes, customersRes, servicesRes] = await Promise.all([
-        axios.get("http://localhost:8080/api/v1/order", {
+      const [orderStatsRes, customersRes, servicesRes] = await Promise.all([
+        axios.get("http://localhost:8080/api/v1/order-stats", {
           headers: { Authorization: `Bearer ${token}` },
         }),
         axios.get("http://localhost:8080/api/v1/customer", {
@@ -49,7 +38,7 @@ const OrdersPage = () => {
       ]);
 
       return {
-        orders: orderRes.data,
+        orderStats: orderStatsRes.data,
         customers: customersRes.data,
         services: servicesRes.data,
       };
@@ -103,27 +92,18 @@ const OrdersPage = () => {
               Manage laundry orders, track status, and process deliveries
             </p>
           </div>
-          <div className="mt-4 md:mt-0 flex space-x-3">
-            <button className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition flex items-center">
-              <Filter className="mr-2 h-4 w-4" />
-              Filter
-            </button>
-            <button
-              onClick={() => setIsOrderFormModalOpen(true)}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition flex items-center">
-              <Plus className="mr-2 h-4 w-4" />
-              New Order
-            </button>
-          </div>
+          <button
+            onClick={() => setIsOrderFormModalOpen(true)}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition flex items-center">
+            <Plus className="mr-2 h-4 w-4" />
+            New Order
+          </button>
         </div>
 
-        <OrderStatsSummary />
+        <OrderStatsSummary orderStats={data?.orderStats} />
       </div>
 
-      <OrderTable
-        orders={data?.orders ?? null}
-        handleSelectOrder={handleSelectOrder}
-      />
+      <OrderTable handleSelectOrder={handleSelectOrder} token={token} />
 
       {isOrderDetailsModalOpen && (
         <OrderModalDetails

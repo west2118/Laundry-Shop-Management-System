@@ -43,9 +43,9 @@ const DashboardStatsSummary = ({ ordersStats }: DashboardStatsSummaryProps) => {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      {summaryData?.map((stat, index) => (
+      {summaryData?.map((stat) => (
         <div
-          key={index}
+          key={stat.title}
           className="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
           <div className="flex items-center justify-between">
             <div>

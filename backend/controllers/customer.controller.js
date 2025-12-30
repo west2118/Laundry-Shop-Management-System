@@ -1,5 +1,6 @@
 import Customer from "../models/customer.model.js";
 import User from "../models/user.model.js";
+import { parseAndBuildQuery } from "../utils/query.utils.js";
 
 export const postCustomer = async (req, res) => {
   try {
@@ -78,11 +79,52 @@ export const getAllCustomers = async (req, res) => {
       return res.status(400).json({ message: "User didn't exist" });
     }
 
-    const customers = await Customer.find({});
+    const { page, limit, skip, search } = parseAndBuildQuery(req);
 
-    res.status(200).json(customers);
+    const query = {};
+    if (search) {
+      query.$or = [{ fullName: { $regex: search, $options: "i" } }];
+    }
+
+    const total = await Customer.countDocuments(query);
+    const customers = await Customer.aggregate([
+      {
+        $match: query, // ✅ APPLY SEARCH FILTER HERE
+      },
+      {
+        $lookup: {
+          from: "orders",
+          localField: "_id",
+          foreignField: "customer",
+          as: "orders",
+        },
+      },
+      {
+        $addFields: {
+          totalOrders: { $size: "$orders" },
+          totalSpent: { $sum: "$orders.totalAmount" },
+        },
+      },
+      {
+        $project: {
+          orders: 0, // remove heavy array
+        },
+      },
+      {
+        $sort: { totalOrders: -1 },
+      },
+      { $skip: skip },
+      { $limit: limit },
+    ]);
+
+    res.status(200).json({
+      customers,
+      page,
+      total,
+      totalPages: Math.ceil(total / limit),
+    });
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
