@@ -15,12 +15,13 @@ export type ServiceType = {
   _id: string;
   serviceName: string;
   description: string;
-  category: string;
+  category: ServiceCategory;
   pricePerKg: number;
   pricePerItem: number;
   unitType: string;
   processingTime: string;
-  status: string;
+  status: ServiceStatus;
+  totalOrders?: number;
   createdAt: string;
   updatedAt: string;
   __v: number;
@@ -78,3 +79,12 @@ export type OrderColumnType = {
   color: string;
   count: number;
 };
+
+export type ServiceCategory =
+  | "basic"
+  | "premium"
+  | "express"
+  | "discount"
+  | "additional";
+
+export type ServiceStatus = "active" | "inactive" | "comingSoon";

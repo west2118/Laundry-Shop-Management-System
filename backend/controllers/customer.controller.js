@@ -129,6 +129,24 @@ export const getAllCustomers = async (req, res) => {
   }
 };
 
+export const getCustomers = async (req, res) => {
+  try {
+    const { uid } = req.user;
+
+    const user = await User.findOne({ uid });
+    if (!user) {
+      return res.status(400).json({ message: "User didn't exist" });
+    }
+
+    const customers = await Customer.find({}).sort({ createdAt: -1 });
+
+    res.status(200).json(customers);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 export const deleteCustomer = async (req, res) => {
   try {
     const { uid } = req.user;

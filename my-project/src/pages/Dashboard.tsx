@@ -23,14 +23,14 @@ const LaundryDashboard = () => {
 
       const [
         ordersStatsRes,
-        orderRevenueRes,
+        orderDailyRevenueRes,
         orderServicesRes,
         orderRecentRes,
       ] = await Promise.all([
         axios.get("http://localhost:8080/api/v1/order-stats-weekly", {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        axios.get("http://localhost:8080/api/v1/order-revenue-weekly", {
+        axios.get("http://localhost:8080/api/v1/order-daily-sales", {
           headers: { Authorization: `Bearer ${token}` },
         }),
         axios.get("http://localhost:8080/api/v1/order-service-weekly", {
@@ -43,7 +43,7 @@ const LaundryDashboard = () => {
 
       return {
         ordersStats: ordersStatsRes.data,
-        orderRevenue: orderRevenueRes.data,
+        orderDailyRevenue: orderDailyRevenueRes.data,
         orderServices: orderServicesRes.data,
         orderRecent: orderRecentRes.data,
       };
@@ -51,7 +51,7 @@ const LaundryDashboard = () => {
     enabled: !!token,
   });
 
-  console.log(data?.orderRevenue);
+  console.log(data?.orderDailyRevenue);
 
   return (
     <div className="flex-1 flex flex-col md:ml-0">
@@ -82,7 +82,7 @@ const LaundryDashboard = () => {
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 my-8">
           {/* Revenue Chart */}
-          <DashboardRevenueChart weeklyRevenueData={data?.orderRevenue} />
+          <DashboardRevenueChart weeklyRevenueData={data?.orderDailyRevenue} />
 
           {/* Service Type Distribution */}
           <DashboardServiceTypesChart serviceTypeData={data?.orderServices} />

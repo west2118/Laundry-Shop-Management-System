@@ -30,9 +30,11 @@ const ServicesPage = () => {
 
   const { data, isError, isLoading } = useQuery<ServiceType[]>({
     queryKey: ["services"],
-    queryFn: fetchData("http://localhost:8080/api/v1/service", token),
+    queryFn: fetchData("http://localhost:8080/api/v1/services", token),
     enabled: !!token,
   });
+
+  console.log("Services: ", data);
 
   const handleSelectCard = (
     service: ServiceType,
@@ -80,9 +82,6 @@ const ServicesPage = () => {
             Add Service
           </button>
         </div>
-
-        {/* Stats Summary */}
-        <StatsSummaryServices />
       </div>
 
       {/* Main Content Area */}

@@ -3,8 +3,10 @@ import Order from "../models/order.model.js";
 import User from "../models/user.model.js";
 import {
   fillWeekDays,
+  fillYearMonths,
   getTodayRange,
   getWeekRange,
+  getYearlyRange,
 } from "../utils/date.utils.js";
 import { parseAndBuildQuery } from "../utils/query.utils.js";
 
@@ -229,44 +231,7 @@ export const updateOrderStatus = async (req, res) => {
   }
 };
 
-export const getWeeklyRevenue = async (req, res) => {
-  try {
-    const { monday, sunday } = getWeekRange();
-
-    const rawData = await Order.aggregate([
-      {
-        $match: {
-          createdAt: {
-            $gte: monday,
-            $lt: sunday,
-          },
-          paymentStatus: "paid",
-        },
-      },
-      {
-        $group: {
-          _id: {
-            $dateToString: {
-              format: "%Y-%m-%d",
-              date: "$createdAt",
-              timezone: "+08:00",
-            },
-          },
-          totalAmount: { $sum: "$totalAmount" },
-        },
-      },
-      { $sort: { _id: 1 } },
-    ]);
-
-    const weeklyData = fillWeekDays(rawData, monday);
-
-    res.status(200).json(weeklyData);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Failed to load dashboard stats" });
-  }
-};
-
+// Dashboard Page
 export const getWeeklyServiceTypes = async (req, res) => {
   try {
     const { monday, sunday } = getWeekRange();
@@ -411,7 +376,86 @@ export const getOrdersStatsData = async (req, res) => {
       totalCustomers: data.customers[0]?.totalCustomers || 0,
     });
   } catch (error) {
-    console.log(error);
+    res.status(500).json({ message: "Failed to load dashboard stats" });
+  }
+};
+
+// Report Page
+export const getMonthlySales = async (req, res) => {
+  try {
+    const { uid } = req.user;
+
+    const { start, end } = getYearlyRange();
+
+    const user = await User.findOne({ uid });
+    if (!user) {
+      return res.status(400).json({ message: "User didn't exist" });
+    }
+
+    const rawData = await Order.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: start,
+            $lt: end,
+          },
+          paymentStatus: "paid",
+          orderStatus: "picked-up",
+        },
+      },
+      {
+        $group: {
+          _id: { $month: "$createdAt" },
+          totalOrders: { $sum: 1 },
+          totalAmount: { $sum: "$totalAmount" },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    const yearlyData = fillYearMonths(rawData);
+
+    res.status(200).json(yearlyData);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to load dashboard stats" });
+  }
+};
+
+export const getDailySales = async (req, res) => {
+  try {
+    const { monday, sunday } = getWeekRange();
+
+    const rawData = await Order.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: monday,
+            $lt: sunday,
+          },
+          paymentStatus: "paid",
+          orderStatus: "picked-up",
+        },
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$createdAt",
+              timezone: "+08:00",
+            },
+          },
+          totalOrders: { $sum: 1 },
+          totalAmount: { $sum: "$totalAmount" },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    const weeklyData = fillWeekDays(rawData, monday);
+
+    res.status(200).json(weeklyData);
+  } catch (error) {
     res.status(500).json({ message: "Failed to load dashboard stats" });
   }
 };

@@ -32,10 +32,62 @@ export const fillWeekDays = (data, monday) => {
     result.push({
       date: DAYS[i],
       totalAmount: map.get(key)?.totalAmount || 0,
+      totalOrders: map.get(key)?.totalOrders || 0,
     });
   }
 
-  return result;
+  const totalRevenue = result.reduce(
+    (sum, total) => sum + total.totalAmount,
+    0
+  );
+
+  return {
+    chartData: result,
+    totalRevenue,
+  };
+};
+
+export const fillYearMonths = (data) => {
+  const map = new Map(data.map((d) => [d._id, d]));
+
+  const MONTHS = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+  const result = [];
+
+  for (let i = 1; i <= 12; i++) {
+    const monthData = map.get(i);
+
+    result.push({
+      date: MONTHS[i - 1],
+      totalAmount: monthData?.totalAmount || 0,
+      totalOrders: monthData?.totalOrders || 0,
+    });
+  }
+
+  const totalRevenue = result.reduce(
+    (sum, total) => sum + total.totalAmount,
+    0
+  );
+
+  const totalOrders = result.reduce((sum, total) => sum + total.totalOrders, 0);
+
+  return {
+    chartData: result,
+    totalRevenue,
+    totalOrders,
+  };
 };
 
 export const getTodayRange = () => {
@@ -46,4 +98,13 @@ export const getTodayRange = () => {
   end.setDate(start.getDate() + 1);
 
   return { start, end };
+};
+
+export const getYearlyRange = () => {
+  const year = new Date().getFullYear();
+
+  const startOfYear = new Date(year, 0, 1);
+  const endOfYear = new Date(year + 1, 0, 1);
+
+  return { start: startOfYear, end: endOfYear };
 };

@@ -1,21 +1,3 @@
-import React from "react";
-import {
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-} from "recharts";
 import {
   BarChart3,
   TrendingUp,
@@ -24,33 +6,51 @@ import {
   Package,
   Calendar,
   Download,
-  Printer,
-  Filter,
-  MoreVertical,
   ChevronDown,
-  Clock,
   PieChart as PieChartIcon,
   LineChart as LineChartIcon,
-  Activity,
-  TrendingDown,
-  CheckCircle,
-  AlertCircle,
-  ShoppingBag,
   Zap,
   Sparkles,
   Wind,
   Thermometer,
-  Star,
-  ChevronRight,
-  ChevronLeft,
-  FileText,
-  Eye,
-  ExternalLink,
   RefreshCw,
-  Target,
 } from "lucide-react";
+import ReportMonthlySales from "../components/Reports/ReportMonthlySales";
+import ReportMostUsedServices from "../components/Reports/ReportMostUsedServices";
+import ReportDailySalesChart from "../components/Reports/ReportDailySalesChart";
+import ReportRevenueChart from "../components/Reports/ReportRevenueChart";
+import axios from "axios";
+import { useUserStore } from "../stores/useUserStore";
+import { useQuery } from "@tanstack/react-query";
 
 const ReportsPage = () => {
+  const token = useUserStore((state) => state.userToken);
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["report-data"],
+    queryFn: async () => {
+      if (!token) return null;
+
+      const [yearlySalesRes, dailySalesRes] = await Promise.all([
+        axios.get("http://localhost:8080/api/v1/order-yearly-sales", {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        axios.get("http://localhost:8080/api/v1/order-daily-sales", {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
+
+      return {
+        yearlySales: yearlySalesRes.data,
+        dailySales: dailySalesRes.data,
+      };
+    },
+    enabled: !!token,
+  });
+
+  console.log("Yearly Data: ", data?.yearlySales);
+  console.log("Daily Data: ", data?.dailySales);
+
   // Monthly sales data
   const monthlySalesData = [
     { month: "Jan", revenue: 4250, orders: 142, avgOrder: 29.93 },
@@ -162,22 +162,22 @@ const ReportsPage = () => {
   ];
 
   // Custom tooltip for charts
-  const CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white p-3 border border-gray-200 shadow-lg rounded-lg">
-          <p className="font-medium text-gray-900">{label}</p>
-          {payload.map((entry, index) => (
-            <p key={index} className="text-sm" style={{ color: entry.color }}>
-              {entry.name}:{" "}
-              {entry.name.includes("$") ? `$${entry.value}` : entry.value}
-            </p>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
+  // const CustomTooltip = ({ active, payload, label }) => {
+  //   if (active && payload && payload.length) {
+  //     return (
+  //       <div className="bg-white p-3 border border-gray-200 shadow-lg rounded-lg">
+  //         <p className="font-medium text-gray-900">{label}</p>
+  //         {payload.map((entry, index) => (
+  //           <p key={index} className="text-sm" style={{ color: entry.color }}>
+  //             {entry.name}:{" "}
+  //             {entry.name.includes("$") ? `$${entry.value}` : entry.value}
+  //           </p>
+  //         ))}
+  //       </div>
+  //     );
+  //   }
+  //   return null;
+  // };
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 md:p-6">
@@ -238,386 +238,19 @@ const ReportsPage = () => {
       {/* Main Content Area */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Monthly Sales Chart */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-xl font-bold text-gray-800">
-                Monthly Sales Overview
-              </h2>
-              <p className="text-gray-600 text-sm">
-                Revenue and order trends for the year
-              </p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <button className="p-2 text-gray-400 hover:bg-gray-50 rounded-lg">
-                <MoreVertical className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={monthlySalesData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="month" stroke="#666" />
-                <YAxis stroke="#666" />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend />
-                <Area
-                  type="monotone"
-                  dataKey="revenue"
-                  name="Revenue ($)"
-                  stroke="#3B82F6"
-                  fill="#3B82F6"
-                  fillOpacity={0.1}
-                  strokeWidth={2}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="orders"
-                  name="Orders"
-                  stroke="#10B981"
-                  strokeWidth={2}
-                  dot={{ stroke: "#10B981", strokeWidth: 2, r: 4 }}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="mt-6 grid grid-cols-2 gap-4">
-            <div className="bg-blue-50 rounded-lg p-4">
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                  <DollarSign className="h-5 w-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Total Revenue</p>
-                  <p className="text-xl font-bold text-gray-900">$82,450</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-green-50 rounded-lg p-4">
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-                  <ShoppingBag className="h-5 w-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Total Orders</p>
-                  <p className="text-xl font-bold text-gray-900">2,561</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ReportMonthlySales monthlySalesData={monthlySalesData} />
 
         {/* Most Used Services */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-xl font-bold text-gray-800">
-                Most Used Services
-              </h2>
-              <p className="text-gray-600 text-sm">
-                Service popularity and revenue distribution
-              </p>
-            </div>
-            <PieChartIcon className="h-6 w-6 text-purple-600" />
-          </div>
-
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={serviceUsageData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) =>
-                    `${name}: ${(percent * 100).toFixed(1)}%`
-                  }
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value">
-                  {serviceUsageData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value, name) => [`${value} orders`, name]}
-                />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="mt-6 space-y-3">
-            {serviceUsageData.map((service, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div
-                    className="w-3 h-3 rounded-full mr-3"
-                    style={{ backgroundColor: service.color }}
-                  />
-                  <span className="font-medium text-gray-900">
-                    {service.name}
-                  </span>
-                </div>
-                <div className="text-right">
-                  <span className="font-bold text-gray-900">
-                    {service.value} orders
-                  </span>
-                  <span className="text-sm text-gray-500 block">
-                    {service.revenue}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <ReportDailySalesChart dailySalesData={dailySalesData} />
       </div>
 
       {/* Daily Sales & Detailed Reports */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Daily Sales Chart */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-xl font-bold text-gray-800">
-                Daily Sales Performance
-              </h2>
-              <p className="text-gray-600 text-sm">
-                Last 7 days revenue and order trends
-              </p>
-            </div>
-            <LineChartIcon className="h-6 w-6 text-green-600" />
-          </div>
-
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={dailySalesData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="day" stroke="#666" />
-                <YAxis stroke="#666" />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend />
-                <Bar
-                  dataKey="revenue"
-                  name="Revenue ($)"
-                  fill="#10B981"
-                  radius={[4, 4, 0, 0]}
-                />
-                <Bar
-                  dataKey="orders"
-                  name="Orders"
-                  fill="#3B82F6"
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">Weekly Summary</p>
-                <p className="text-sm text-gray-600">Oct 9 - Oct 15, 2023</p>
-              </div>
-              <div className="text-right">
-                <p className="font-bold text-gray-900">$4,690</p>
-                <p className="text-sm text-green-600 flex items-center">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  +8.5% from last week
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ReportRevenueChart />
 
         {/* Revenue by Service Type */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-xl font-bold text-gray-800">
-                Revenue by Service Type
-              </h2>
-              <p className="text-gray-600 text-sm">
-                Monthly revenue distribution
-              </p>
-            </div>
-            <Activity className="h-6 w-6 text-blue-600" />
-          </div>
-
-          <div className="space-y-4">
-            {revenueByService.map((service, index) => (
-              <div key={index} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
-                      <div className="text-gray-600">{service.icon}</div>
-                    </div>
-                    <div>
-                      <span className="font-medium text-gray-900">
-                        {service.service}
-                      </span>
-                      <span className="text-sm text-gray-500 ml-2">
-                        ${service.revenue}
-                      </span>
-                    </div>
-                  </div>
-                  <span className="font-bold text-gray-900">
-                    {service.percentage}%
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-blue-600 h-2 rounded-full"
-                    style={{ width: `${service.percentage}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">Total Revenue</p>
-                <p className="text-sm text-gray-600">October 2023</p>
-              </div>
-              <div className="text-right">
-                <p className="font-bold text-gray-900">$5,756</p>
-                <p className="text-sm text-green-600 flex items-center">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  +12.3% from last month
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Top Performing Days & Quick Reports */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        {/* Top Performing Days */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-xl font-bold text-gray-800">
-                Top Performing Days
-              </h2>
-              <p className="text-gray-600 text-sm">
-                Highest revenue days this month
-              </p>
-            </div>
-            <Star className="h-6 w-6 text-yellow-600" />
-          </div>
-
-          <div className="space-y-4">
-            {topDays.map((day, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center">
-                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                    <Calendar className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{day.day}</p>
-                    <p className="text-sm text-gray-500">{day.date}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-gray-900">{day.revenue}</p>
-                  <p className="text-sm text-gray-500">{day.orders} orders</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <Target className="h-5 w-5 text-green-600 mr-2" />
-                <span className="font-medium text-gray-900">Daily Target</span>
-              </div>
-              <div className="text-right">
-                <p className="font-bold text-gray-900">$750</p>
-                <p className="text-sm text-green-600">Achieved 4 days</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Reports & Actions */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-xl font-bold text-gray-800">Quick Reports</h2>
-              <p className="text-gray-600 text-sm">
-                Generate and export reports
-              </p>
-            </div>
-            <FileText className="h-6 w-6 text-blue-600" />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <button className="p-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition flex flex-col items-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-3">
-                <Calendar className="h-6 w-6 text-blue-600" />
-              </div>
-              <span className="font-medium text-gray-900">Daily Report</span>
-              <span className="text-sm text-gray-500">Today's summary</span>
-            </button>
-            <button className="p-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition flex flex-col items-center">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-3">
-                <BarChart3 className="h-6 w-6 text-green-600" />
-              </div>
-              <span className="font-medium text-gray-900">Monthly Report</span>
-              <span className="text-sm text-gray-500">Full month analysis</span>
-            </button>
-            <button className="p-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition flex flex-col items-center">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-3">
-                <Users className="h-6 w-6 text-purple-600" />
-              </div>
-              <span className="font-medium text-gray-900">Customer Report</span>
-              <span className="text-sm text-gray-500">Customer insights</span>
-            </button>
-            <button className="p-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition flex flex-col items-center">
-              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-3">
-                <Package className="h-6 w-6 text-orange-600" />
-              </div>
-              <span className="font-medium text-gray-900">Service Report</span>
-              <span className="text-sm text-gray-500">Service performance</span>
-            </button>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center">
-                <Download className="h-5 w-5 text-gray-600 mr-3" />
-                <span className="font-medium text-gray-900">
-                  Export Options
-                </span>
-              </div>
-              <div className="flex space-x-2">
-                <button className="px-3 py-1 bg-white border border-gray-300 text-gray-700 rounded text-sm hover:bg-gray-50">
-                  PDF
-                </button>
-                <button className="px-3 py-1 bg-white border border-gray-300 text-gray-700 rounded text-sm hover:bg-gray-50">
-                  Excel
-                </button>
-                <button className="px-3 py-1 bg-white border border-gray-300 text-gray-700 rounded text-sm hover:bg-gray-50">
-                  CSV
-                </button>
-              </div>
-            </div>
-
-            <button className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center justify-center">
-              <Printer className="mr-2 h-4 w-4" />
-              Print Full Report
-            </button>
-          </div>
-        </div>
+        <ReportMostUsedServices serviceUsageData={serviceUsageData} />
       </div>
     </div>
   );

@@ -84,7 +84,7 @@ export const putService = async (req, res) => {
   }
 };
 
-export const getAllServices = async (req, res) => {
+export const getServices = async (req, res) => {
   try {
     const { uid } = req.user;
 
@@ -94,6 +94,53 @@ export const getAllServices = async (req, res) => {
     }
 
     const services = await Service.find({});
+
+    res.status(200).json(services);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const getAllServices = async (req, res) => {
+  try {
+    const { uid } = req.user;
+
+    const user = await User.findOne({ uid });
+    if (!user) {
+      return res.status(400).json({ message: "User didn't exist" });
+    }
+
+    const services = await Service.aggregate([
+      {
+        $lookup: {
+          from: "orders",
+          let: { serviceId: "$_id" },
+          pipeline: [
+            { $unwind: "$items" },
+            {
+              $match: {
+                $expr: { $eq: ["$items.service", "$$serviceId"] },
+              },
+            },
+          ],
+          as: "orders",
+        },
+      },
+      {
+        $addFields: {
+          totalOrders: { $size: "$orders" },
+        },
+      },
+      {
+        $project: {
+          orders: 0,
+        },
+      },
+      {
+        $sort: { totalOrders: -1 },
+      },
+    ]);
 
     res.status(200).json(services);
   } catch (error) {
