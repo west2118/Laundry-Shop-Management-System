@@ -16,16 +16,20 @@ import {
 import RevenueSkeleton from "../SkeletonLoading/RevenueSkeleton";
 
 type DashboardRevenueChartProps = {
-  weeklyRevenueData: {
-    date: string;
-    totalAmount: number;
-  }[];
+  dailyRevenueData: {
+    chartData: {
+      date: string;
+      totalAmount: number;
+      totalOrders: number;
+    }[];
+    totalRevenue: number;
+  };
 };
 
 const DashboardRevenueChart = ({
-  weeklyRevenueData,
+  dailyRevenueData,
 }: DashboardRevenueChartProps) => {
-  if (!weeklyRevenueData) return <RevenueSkeleton />;
+  if (!dailyRevenueData) return <RevenueSkeleton />;
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -38,7 +42,7 @@ const DashboardRevenueChart = ({
       </div>
       <div className="h-72">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={weeklyRevenueData}>
+          <LineChart data={dailyRevenueData.chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis dataKey="date" stroke="#666" />
             <YAxis stroke="#666" />

@@ -8,16 +8,30 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { TrendingUp } from "lucide-react";
+import { pesoFormatter } from "../../lib/utils";
+import ReportChartSkeleton from "../SkeletonLoading/ReportChartSkeleton";
 
-const aovChartData = [
-  { period: "Today", value: 320 },
-  { period: "This Week", value: 295 },
-  { period: "This Month", value: 310 },
-];
+type ReportAverageRevenueChartProps = {
+  averageRevenueData: {
+    averageToday: number;
+    averageMonthly: number;
+    averageWeekly: number;
+  };
+};
 
-const ReportRevenueChart = () => {
+const ReportAverageRevenueChart = ({
+  averageRevenueData,
+}: ReportAverageRevenueChartProps) => {
+  if (!averageRevenueData) return <ReportChartSkeleton />;
+
+  const aovChartData = [
+    { period: "Today", value: averageRevenueData.averageToday },
+    { period: "Weekly", value: averageRevenueData.averageWeekly },
+    { period: "Monthly", value: averageRevenueData.averageMonthly },
+  ];
+
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -43,18 +57,20 @@ const ReportRevenueChart = () => {
       </div>
 
       {/* Footer */}
-      <div className="mt-6 pt-6 border-t border-gray-200">
+      <div className="pt-6 border-t border-gray-200 mt-auto">
         <div className="flex items-center justify-between">
           <div>
             <p className="font-medium text-gray-900">Current AOV</p>
             <p className="text-sm text-gray-600">This month</p>
           </div>
           <div className="text-right">
-            <p className="font-bold text-gray-900 text-lg">₱310.00</p>
-            <p className="text-sm text-green-600 flex items-center justify-end">
+            <p className="font-bold text-gray-900 text-lg">
+              {pesoFormatter.format(averageRevenueData.averageMonthly)}
+            </p>
+            {/* <p className="text-sm text-green-600 flex items-center justify-end">
               <TrendingUp className="h-3 w-3 mr-1" />
               +6.2% from last month
-            </p>
+            </p> */}
           </div>
         </div>
       </div>
@@ -62,4 +78,4 @@ const ReportRevenueChart = () => {
   );
 };
 
-export default ReportRevenueChart;
+export default ReportAverageRevenueChart;

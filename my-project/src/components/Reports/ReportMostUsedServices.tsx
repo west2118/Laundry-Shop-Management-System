@@ -11,14 +11,36 @@ import {
   PieChart as PieChartIcon,
   LineChart as LineChartIcon,
 } from "lucide-react";
+import { pesoFormatter } from "../../lib/utils";
+import ReportMostServiceSkeleton from "../SkeletonLoading/ReportMostServiceSkeleton";
 
 type ReportMostUsedServicesProps = {
-  serviceUsageData: any;
+  serviceUsageData: {
+    dataChart: {
+      _id: string;
+      totalOrders: number;
+      totalRevenue: number;
+    }[];
+    totalOrders: number;
+  };
 };
 
 const ReportMostUsedServices = ({
   serviceUsageData,
 }: ReportMostUsedServicesProps) => {
+  if (!serviceUsageData) return <ReportMostServiceSkeleton />;
+
+  const COLORS = ["#3B82F6", "#10B981", "#F59E0B", "#EF4444"];
+
+  const serviceUsageDataChart = serviceUsageData?.dataChart?.map(
+    (item, index) => ({
+      name: item._id,
+      totalOrders: item.totalOrders,
+      totalRevenue: item.totalRevenue,
+      color: COLORS[index % COLORS.length],
+    })
+  );
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
       <div className="flex items-center justify-between mb-6">
@@ -37,28 +59,35 @@ const ReportMostUsedServices = ({
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
-              data={serviceUsageData}
+              data={serviceUsageDataChart}
               cx="50%"
               cy="50%"
               labelLine={false}
               label={({ name, percent }) =>
-                `${name}: ${(percent * 100).toFixed(1)}%`
+                `${name}: ${(percent! * 100).toFixed(1)}%`
               }
               outerRadius={80}
               fill="#8884d8"
-              dataKey="value">
-              {serviceUsageData.map((entry, index) => (
+              dataKey="totalOrders">
+              {serviceUsageDataChart.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
               ))}
             </Pie>
-            <Tooltip formatter={(value, name) => [`${value} orders`, name]} />
+            <Tooltip
+              formatter={(value, name, props) => [
+                `${value} orders (₱${props.payload.totalRevenue.toLocaleString(
+                  "en-PH"
+                )})`,
+                name,
+              ]}
+            />
             <Legend />
           </PieChart>
         </ResponsiveContainer>
       </div>
 
-      {/* <div className="mt-6 space-y-3">
-        {serviceUsageData.map((service, index) => (
+      <div className="mt-6 space-y-3">
+        {serviceUsageDataChart?.map((service, index) => (
           <div key={index} className="flex items-center justify-between">
             <div className="flex items-center">
               <div
@@ -69,15 +98,15 @@ const ReportMostUsedServices = ({
             </div>
             <div className="text-right">
               <span className="font-bold text-gray-900">
-                {service.value} orders
+                {pesoFormatter.format(service.totalRevenue ?? 0)}
               </span>
               <span className="text-sm text-gray-500 block">
-                {service.revenue}
+                {service.totalOrders} orders
               </span>
             </div>
           </div>
         ))}
-      </div> */}
+      </div>
     </div>
   );
 };

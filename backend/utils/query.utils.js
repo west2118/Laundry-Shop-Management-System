@@ -26,3 +26,40 @@ export function applyCategoryTagFilters(items, filters = {}) {
 
   return filtered;
 }
+
+export const buildAovPipeline = (start, end) => [
+  {
+    $match: {
+      paymentStatus: "paid",
+      orderStatus: "picked-up",
+      createdAt: {
+        $gte: start,
+        $lt: end,
+      },
+    },
+  },
+  {
+    $group: {
+      _id: null,
+      totalRevenue: { $sum: "$totalAmount" },
+      totalOrders: { $sum: 1 },
+    },
+  },
+  {
+    $project: {
+      _id: 0,
+      aov: {
+        $round: [
+          {
+            $cond: [
+              { $eq: ["$totalOrders", 0] },
+              0,
+              { $divide: ["$totalRevenue", "$totalOrders"] },
+            ],
+          },
+          2,
+        ],
+      },
+    },
+  },
+];

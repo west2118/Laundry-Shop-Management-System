@@ -16,29 +16,24 @@ import {
   LineChart as LineChartIcon,
   ShoppingBag,
 } from "lucide-react";
+import { pesoFormatter } from "../../lib/utils";
+import ReportMonthlySkeleton from "../SkeletonLoading/ReportMonthlySkeleton";
 
 type ReportMonthlySalesProps = {
-  monthlySalesData: any;
-};
-
-export const CustomTooltip = ({ active, payload, label }) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white p-3 border border-gray-200 shadow-lg rounded-lg">
-        <p className="font-medium text-gray-900">{label}</p>
-        {payload.map((entry, index) => (
-          <p key={index} className="text-sm" style={{ color: entry.color }}>
-            {entry.name}:{" "}
-            {entry.name.includes("$") ? `$${entry.value}` : entry.value}
-          </p>
-        ))}
-      </div>
-    );
-  }
-  return null;
+  monthlySalesData: {
+    chartData: {
+      date: string;
+      totalAmount: number;
+      totalOrders: number;
+    }[];
+    totalRevenue: number;
+    totalOrders: number;
+  };
 };
 
 const ReportMonthlySales = ({ monthlySalesData }: ReportMonthlySalesProps) => {
+  if (!monthlySalesData) return <ReportMonthlySkeleton />;
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
       <div className="flex items-center justify-between mb-6">
@@ -59,15 +54,21 @@ const ReportMonthlySales = ({ monthlySalesData }: ReportMonthlySalesProps) => {
 
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={monthlySalesData}>
+          <AreaChart data={monthlySalesData?.chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <XAxis dataKey="month" stroke="#666" />
+            <XAxis dataKey="date" stroke="#666" />
             <YAxis stroke="#666" />
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip
+              formatter={(value, name) =>
+                name === "Revenue ($)"
+                  ? [`$${value?.toLocaleString()}`, name]
+                  : [value, name]
+              }
+            />
             <Legend />
             <Area
               type="monotone"
-              dataKey="revenue"
+              dataKey="totalAmount"
               name="Revenue ($)"
               stroke="#3B82F6"
               fill="#3B82F6"
@@ -76,7 +77,7 @@ const ReportMonthlySales = ({ monthlySalesData }: ReportMonthlySalesProps) => {
             />
             <Line
               type="monotone"
-              dataKey="orders"
+              dataKey="totalOrders"
               name="Orders"
               stroke="#10B981"
               strokeWidth={2}
@@ -94,7 +95,9 @@ const ReportMonthlySales = ({ monthlySalesData }: ReportMonthlySalesProps) => {
             </div>
             <div>
               <p className="text-sm text-gray-600">Total Revenue</p>
-              <p className="text-xl font-bold text-gray-900">$82,450</p>
+              <p className="text-xl font-bold text-gray-900">
+                {pesoFormatter.format(monthlySalesData?.totalRevenue ?? 0)}
+              </p>
             </div>
           </div>
         </div>
@@ -105,7 +108,9 @@ const ReportMonthlySales = ({ monthlySalesData }: ReportMonthlySalesProps) => {
             </div>
             <div>
               <p className="text-sm text-gray-600">Total Orders</p>
-              <p className="text-xl font-bold text-gray-900">2,561</p>
+              <p className="text-xl font-bold text-gray-900">
+                {monthlySalesData?.totalOrders}
+              </p>
             </div>
           </div>
         </div>

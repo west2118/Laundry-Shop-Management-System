@@ -1,0 +1,34 @@
+import React from "react";
+
+const ReportChartSkeleton = () => {
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 animate-pulse">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="space-y-2">
+          <div className="h-6 bg-gray-300 rounded w-44"></div>
+          <div className="h-4 bg-gray-200 rounded w-48"></div>
+        </div>
+        <div className="h-6 w-6 bg-gray-200 rounded-full"></div>
+      </div>
+
+      {/* Chart placeholder */}
+      <div className="h-80 bg-gray-100 rounded-lg"></div>
+
+      {/* Summary section */}
+      <div className="mt-6 pt-6 border-t border-gray-200">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <div className="h-4 bg-gray-300 rounded w-28"></div>
+            <div className="h-3 bg-gray-200 rounded w-36"></div>
+          </div>
+          <div className="text-right space-y-2">
+            <div className="h-6 bg-gray-300 rounded w-24 ml-auto"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ReportChartSkeleton;

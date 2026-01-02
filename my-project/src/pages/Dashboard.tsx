@@ -51,8 +51,6 @@ const LaundryDashboard = () => {
     enabled: !!token,
   });
 
-  console.log(data?.orderDailyRevenue);
-
   return (
     <div className="flex-1 flex flex-col md:ml-0">
       <main className="flex-1 p-4 md:p-6 mt-16 md:mt-0">
@@ -82,7 +80,7 @@ const LaundryDashboard = () => {
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 my-8">
           {/* Revenue Chart */}
-          <DashboardRevenueChart weeklyRevenueData={data?.orderDailyRevenue} />
+          <DashboardRevenueChart dailyRevenueData={data?.orderDailyRevenue} />
 
           {/* Service Type Distribution */}
           <DashboardServiceTypesChart serviceTypeData={data?.orderServices} />

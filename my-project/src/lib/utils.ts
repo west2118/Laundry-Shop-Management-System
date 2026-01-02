@@ -134,3 +134,9 @@ export const serviceColor = [
     color: "#F97316",
   },
 ];
+
+export const pesoFormatter = new Intl.NumberFormat("en-PH", {
+  style: "currency",
+  currency: "PHP",
+  minimumFractionDigits: 2,
+});

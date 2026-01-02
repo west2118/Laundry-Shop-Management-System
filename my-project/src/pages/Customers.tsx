@@ -53,7 +53,7 @@ const Customers = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 md:p-6">
+    <div className="min-h-screen p-4 md:p-6">
       <div className="mb-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between">
           <div>

@@ -28,14 +28,6 @@ const ServicesPage = () => {
     null
   );
 
-  const { data, isError, isLoading } = useQuery<ServiceType[]>({
-    queryKey: ["services"],
-    queryFn: fetchData("http://localhost:8080/api/v1/services", token),
-    enabled: !!token,
-  });
-
-  console.log("Services: ", data);
-
   const handleSelectCard = (
     service: ServiceType,
     action: "edit" | "delete"
@@ -62,7 +54,7 @@ const ServicesPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 md:p-6">
+    <div className="min-h-screen p-4 md:p-6">
       {/* Page Header */}
       <div className="mb-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between">
@@ -85,10 +77,7 @@ const ServicesPage = () => {
       </div>
 
       {/* Main Content Area */}
-      <ServiceTable
-        services={data ?? null}
-        handleSelectCard={handleSelectCard}
-      />
+      <ServiceTable handleSelectCard={handleSelectCard} token={token} />
 
       {isServiceFormModalOpen && (
         <ServiceModalForm

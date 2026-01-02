@@ -1,6 +1,7 @@
 import Service from "../models/service.model.js";
 import User from "../models/user.model.js";
 import { getWeekRange } from "../utils/date.utils.js";
+import { parseAndBuildQuery } from "../utils/query.utils.js";
 
 export const postService = async (req, res) => {
   try {
@@ -111,7 +112,18 @@ export const getAllServices = async (req, res) => {
       return res.status(400).json({ message: "User didn't exist" });
     }
 
+    const { page, limit, skip, search } = parseAndBuildQuery(req);
+
+    const query = {};
+    if (search) {
+      query.$or = [{ serviceName: { $regex: search, $options: "i" } }];
+    }
+
+    const total = await Service.countDocuments(query);
     const services = await Service.aggregate([
+      {
+        $match: query, // ✅ APPLY SEARCH FILTER HERE
+      },
       {
         $lookup: {
           from: "orders",
@@ -140,9 +152,16 @@ export const getAllServices = async (req, res) => {
       {
         $sort: { totalOrders: -1 },
       },
+      { $skip: skip },
+      { $limit: limit },
     ]);
 
-    res.status(200).json(services);
+    res.status(200).json({
+      services,
+      page,
+      total,
+      totalPages: Math.ceil(total / limit),
+    });
   } catch (error) {
     console.log(error.message);
     res.status(500).json({ message: "Server error", error: error.message });
