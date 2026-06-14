@@ -22,7 +22,6 @@ type DataType = {
 };
 
 const ServiceTable = ({ handleSelectCard }: ServiceTableProps) => {
-  const user = useUserStore((state) => state.user);
   const limit = 10;
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -59,12 +58,11 @@ const ServiceTable = ({ handleSelectCard }: ServiceTableProps) => {
   };
 
   const { data, isLoading } = useQuery<DataType>({
-    queryKey: ["orders-data", page, limit, debouncedSearch, category],
+    queryKey: ["services-data", page, limit, debouncedSearch, category],
     queryFn: fetchData(
       `http://localhost:8080/api/v1/services?page=${page}&limit=${limit}${category !== "All" ? `&category=${category}` : ""
       }${debouncedSearch ? `&search=${debouncedSearch}` : ""}`
     ),
-    enabled: !!user,
     placeholderData: keepPreviousData,
   });
 

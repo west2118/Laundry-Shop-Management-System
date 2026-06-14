@@ -74,20 +74,23 @@ export const getAllOrders = async (req, res) => {
 
     const query = {};
     if (search) {
+      const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const safeSearch = escapeRegex(search);
+
       const customerIds = await Customer.find({
-        fullName: { $regex: search, $options: "i" },
+        fullName: { $regex: safeSearch, $options: "i" },
       }).distinct("_id");
 
       query.$or = [
-        { paymentStatus: { $regex: search, $options: "i" } },
-        { orderStatus: { $regex: search, $options: "i" } },
-        { "items.serviceName": { $regex: search, $options: "i" } },
+        { paymentStatus: { $regex: safeSearch, $options: "i" } },
+        { orderStatus: { $regex: safeSearch, $options: "i" } },
+        { "items.serviceName": { $regex: safeSearch, $options: "i" } },
         { customer: { $in: customerIds } },
         {
           $expr: {
             $regexMatch: {
               input: { $toString: "$_id" },
-              regex: search,
+              regex: safeSearch,
               options: "i",
             },
           },
@@ -399,172 +402,71 @@ export const getOrdersStatsData = async (req, res) => {
 // Report Page
 export const getReportStatsData = async (req, res) => {
   try {
-    const { start, end } = getTodayRange();
-    const { startOfMonth, endOfMonth, startOfLastMonth, endOfLastMonth } =
-      getMonthlyRange();
-
-    const [data] = await Order.aggregate([
-      {
-        $facet: {
-          totalRevenue: [
-            {
-              $match: {
-                paymentStatus: "paid",
-                orderStatus: "picked-up",
-              },
-            },
-            {
-              $group: {
-                _id: null,
-                revenue: { $sum: "$totalAmount" },
-              },
-            },
-          ],
-
-          totalOrders: [
-            {
-              $match: {
-                paymentStatus: "paid",
-                orderStatus: "picked-up",
-              },
-            },
-            { $count: "count" },
-          ],
-
-          revenueToday: [
-            {
-              $match: {
-                createdAt: { $gte: start, $lt: end },
-                paymentStatus: "paid",
-              },
-            },
-            {
-              $group: {
-                _id: null,
-                revenue: { $sum: "$totalAmount" },
-              },
-            },
-          ],
-
-          totalCustomers: [
-            {
-              $group: {
-                _id: "$customer",
-              },
-            },
-            {
-              $group: {
-                _id: null,
-                totalCustomers: { $sum: 1 },
-              },
-            },
-          ],
-
-          thisMonthRevenue: [
-            {
-              $match: {
-                orderStatus: "picked-up",
-                paymentStatus: "paid",
-                createdAt: { $gte: startOfMonth, $lt: endOfMonth },
-              },
-            },
-            {
-              $group: {
-                _id: null,
-                totalRevenue: { $sum: "$totalAmount" },
-              },
-            },
-          ],
-
-          lastMonthRevenue: [
-            {
-              $match: {
-                orderStatus: "picked-up",
-                paymentStatus: "paid",
-                createdAt: { $gte: startOfLastMonth, $lt: endOfLastMonth },
-              },
-            },
-            {
-              $group: {
-                _id: null,
-                totalRevenue: { $sum: "$totalAmount" },
-              },
-            },
-          ],
-
-          repeatCustomers: [
-            { $group: { _id: "$customer", orders: { $sum: 1 } } },
-            { $match: { orders: { $gt: 1 } } },
-            { $count: "repeatCustomers" },
-          ],
-        },
-      },
-    ]);
-
-    const repeatRate =
-      (data.repeatCustomers[0]?.repeatCustomers /
-        data.totalCustomers[0]?.totalCustomers) *
-      100;
-
-    const aovData = data.totalRevenue[0]?.revenue / data.totalOrders[0]?.count;
-
-    const monthlyGrowth =
-      ((data.thisMonthRevenue[0]?.totalRevenue -
-        data.lastMonthRevenue[0]?.totalRevenue) /
-        data.lastMonthRevenue[0]?.totalRevenue) *
-      100;
-
-    res.status(200).json({
-      totalRevenue: data.totalRevenue[0]?.revenue || 0,
-      totalOrders: data.totalOrders[0]?.count || 0,
-      revenueToday: data.revenueToday[0]?.revenue || 0,
-      totalCustomers: data.totalCustomers[0]?.totalCustomers || 0,
-      repeatRate,
-      aovData,
-      monthlyGrowth,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Failed to load dashboard stats" });
-  }
-};
-
-export const getMonthlySales = async (req, res) => {
-  try {
     const { id: userId } = req.user;
-
-    const { start, end } = getYearlyRange();
+    const { startDate, endDate } = req.query;
 
     const user = await User.findById(userId);
     if (!user) {
       return res.status(400).json({ message: "User didn't exist" });
     }
 
-    const rawData = await Order.aggregate([
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+
+    const stats = await Order.aggregate([
       {
         $match: {
-          createdAt: {
-            $gte: start,
-            $lt: end,
-          },
-          paymentStatus: "paid",
-          orderStatus: "picked-up",
+          createdAt: { $gte: start, $lte: end },
         },
       },
       {
-        $group: {
-          _id: { $month: "$createdAt" },
-          totalOrders: { $sum: 1 },
-          totalAmount: { $sum: "$totalAmount" },
+        $facet: {
+          salesData: [
+            {
+              $match: {
+                paymentStatus: "paid",
+                orderStatus: "picked-up",
+              },
+            },
+            {
+              $group: {
+                _id: null,
+                totalRevenue: { $sum: "$totalAmount" },
+                totalOrders: { $sum: 1 },
+              },
+            },
+          ],
+          customerData: [
+            {
+              $group: {
+                _id: "$customer",
+              },
+            },
+            {
+              $count: "totalCustomers",
+            },
+          ],
         },
       },
-      { $sort: { _id: 1 } },
     ]);
 
-    const yearlyData = fillYearMonths(rawData);
+    const data = stats[0];
+    const totalRevenue = data.salesData[0]?.totalRevenue || 0;
+    const totalOrders = data.salesData[0]?.totalOrders || 0;
+    const totalCustomers = data.customerData[0]?.totalCustomers || 0;
+    const aovData = totalOrders === 0 ? 0 : totalRevenue / totalOrders;
 
-    res.status(200).json(yearlyData);
+    res.status(200).json({
+      totalRevenue,
+      totalOrders,
+      totalCustomers,
+      aovData,
+    });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Failed to load dashboard stats" });
   }
 };
@@ -608,22 +510,31 @@ export const getDailySales = async (req, res) => {
   }
 };
 
-export const getAverageRevenue = async (req, res) => {
+export const getRevenueTrend = async (req, res) => {
   try {
-    const { start, end } = getTodayRange();
-    const { monday, sunday } = getWeekRange();
-    const { startOfMonth, endOfMonth } = getMonthlyRange();
+    const { id: userId } = req.user;
+    const { startDate, endDate } = req.query;
 
-    // 1️⃣ Aggregate ONCE (monthly range covers today + week)
-    const stats = await Order.aggregate([
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(400).json({ message: "User didn't exist" });
+    }
+
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+
+    const rawData = await Order.aggregate([
       {
         $match: {
+          createdAt: {
+            $gte: start,
+            $lte: end,
+          },
           paymentStatus: "paid",
           orderStatus: "picked-up",
-          createdAt: {
-            $gte: startOfMonth,
-            $lt: endOfMonth,
-          },
         },
       },
       {
@@ -632,54 +543,136 @@ export const getAverageRevenue = async (req, res) => {
             $dateToString: {
               format: "%Y-%m-%d",
               date: "$createdAt",
+              timezone: "+08:00",
             },
           },
-          totalRevenue: { $sum: "$totalAmount" },
           totalOrders: { $sum: 1 },
+          totalAmount: { $sum: "$totalAmount" },
         },
       },
+      { $sort: { _id: 1 } },
     ]);
 
-    // 2️⃣ Helpers
-    const calcAov = (revenue = 0, orders = 0) =>
-      orders === 0 ? 0 : +(revenue / orders).toFixed(2);
+    const map = new Map(rawData.map((d) => [d._id, d]));
+    const result = [];
+    
+    const diffTime = Math.abs(end - start);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    const sumByRange = (from, to) => {
-      let revenue = 0;
-      let orders = 0;
-
-      stats.forEach((d) => {
-        const date = new Date(d._id);
-        if (date >= from && date < to) {
-          revenue += d.totalRevenue;
-          orders += d.totalOrders;
+    if (diffDays > 60) {
+      let currentStart = new Date(start);
+      while (currentStart <= end) {
+        let currentEnd = new Date(currentStart.getFullYear(), currentStart.getMonth() + 1, 0);
+        currentEnd.setHours(23, 59, 59, 999);
+        if (currentEnd > end) {
+          currentEnd = new Date(end);
         }
-      });
+        
+        let monthAmount = 0;
+        let monthOrders = 0;
+        
+        let tempDate = new Date(currentStart);
+        while (tempDate <= currentEnd) {
+          const key = tempDate.toLocaleDateString("en-CA");
+          monthAmount += map.get(key)?.totalAmount || 0;
+          monthOrders += map.get(key)?.totalOrders || 0;
+          tempDate.setDate(tempDate.getDate() + 1);
+        }
+        
+        const monthLabel = currentStart.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+        
+        result.push({
+          date: monthLabel,
+          totalAmount: monthAmount,
+          totalOrders: monthOrders,
+        });
+        
+        currentStart = new Date(currentStart.getFullYear(), currentStart.getMonth() + 1, 1);
+      }
+    } else if (diffDays > 15) {
+      let currentStart = new Date(start);
+      while (currentStart <= end) {
+        let currentEnd = new Date(currentStart);
+        currentEnd.setDate(currentStart.getDate() + 6);
+        currentEnd.setHours(23, 59, 59, 999);
+        if (currentEnd > end) {
+          currentEnd = new Date(end);
+        }
+        
+        let weekAmount = 0;
+        let weekOrders = 0;
+        
+        let tempDate = new Date(currentStart);
+        while (tempDate <= currentEnd) {
+          const key = tempDate.toLocaleDateString("en-CA");
+          weekAmount += map.get(key)?.totalAmount || 0;
+          weekOrders += map.get(key)?.totalOrders || 0;
+          tempDate.setDate(tempDate.getDate() + 1);
+        }
+        
+        const startLabel = currentStart.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        const endLabel = currentEnd.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        
+        result.push({
+          date: `${startLabel} - ${endLabel}`,
+          totalAmount: weekAmount,
+          totalOrders: weekOrders,
+        });
+        
+        currentStart.setDate(currentStart.getDate() + 7);
+      }
+    } else {
+      let currentDate = new Date(start);
+      while (currentDate <= end) {
+        const key = currentDate.toLocaleDateString("en-CA");
+        const shortLabel = currentDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        
+        result.push({
+          date: shortLabel,
+          totalAmount: map.get(key)?.totalAmount || 0,
+          totalOrders: map.get(key)?.totalOrders || 0,
+        });
 
-      return calcAov(revenue, orders);
-    };
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+    }
 
-    // 3️⃣ Final response
+    const totalRevenue = result.reduce((sum, total) => sum + total.totalAmount, 0);
+
     res.status(200).json({
-      averageToday: sumByRange(start, end),
-      averageWeekly: sumByRange(monday, sunday),
-      averageMonthly: sumByRange(startOfMonth, endOfMonth),
+      chartData: result,
+      totalRevenue,
     });
   } catch (error) {
-    res.status(500).json({ message: "Failed to load dashboard stats" });
+    console.log(error);
+    res.status(500).json({ message: "Failed to load revenue trend stats" });
   }
 };
 
 export const getMostUsedService = async (req, res) => {
   try {
     const { id: userId } = req.user;
+    const { startDate, endDate } = req.query;
 
     const user = await User.findById(userId);
     if (!user) {
       return res.status(400).json({ message: "User didn't exist" });
     }
 
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+
     const data = await Order.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: start, $lte: end },
+          paymentStatus: "paid",
+          orderStatus: "picked-up",
+        },
+      },
       {
         $addFields: {
           itemDiscount: {

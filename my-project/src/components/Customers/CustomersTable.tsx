@@ -25,8 +25,6 @@ type DataType = {
 };
 
 const CustomersTable = ({ handleSelectCustomer }: CustomersTableProps) => {
-  const user = useUserStore((state) => state.user);
-
   const limit = 10;
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -55,11 +53,9 @@ const CustomersTable = ({ handleSelectCustomer }: CustomersTableProps) => {
   const { data, isLoading } = useQuery<DataType>({
     queryKey: ["customer-data", page, limit, debouncedSearch],
     queryFn: fetchData(
-      `http://localhost:8080/api/v1/customers?page=${page}&limit=${limit}${
-        debouncedSearch ? `&search=${debouncedSearch}` : ""
+      `http://localhost:8080/api/v1/customers?page=${page}&limit=${limit}${debouncedSearch ? `&search=${debouncedSearch}` : ""
       }`
     ),
-    enabled: !!user,
     placeholderData: keepPreviousData,
   });
 

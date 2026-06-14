@@ -1,4 +1,5 @@
 import User from "../models/user.model.js";
+import Token from "../models/token.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -42,9 +43,12 @@ export const register = async (req, res) => {
     });
 
     const { accessToken, refreshToken } = generateTokens(newUser._id);
-    newUser.refreshToken = refreshToken;
-
-    await newUser.save();
+    
+    await Token.create({
+      userId: newUser._id,
+      accessToken,
+      refreshToken,
+    });
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
@@ -89,8 +93,11 @@ export const login = async (req, res) => {
 
     const { accessToken, refreshToken } = generateTokens(user._id);
 
-    user.refreshToken = refreshToken;
-    await user.save();
+    await Token.create({
+      userId: user._id,
+      accessToken,
+      refreshToken,
+    });
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
@@ -128,15 +135,21 @@ export const refresh = async (req, res) => {
       process.env.JWT_REFRESH_SECRET || "default_jwt_refresh_secret"
     );
 
-    const user = await User.findById(decoded.id);
-    if (!user || user.refreshToken !== refreshToken) {
+    const tokenDoc = await Token.findOne({ refreshToken });
+    if (!tokenDoc) {
       return res.status(403).json({ message: "Forbidden: Invalid refresh token" });
+    }
+
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.status(403).json({ message: "Forbidden: User not found" });
     }
 
     const { accessToken, refreshToken: newRefreshToken } = generateTokens(user._id);
 
-    user.refreshToken = newRefreshToken;
-    await user.save();
+    tokenDoc.accessToken = accessToken;
+    tokenDoc.refreshToken = newRefreshToken;
+    await tokenDoc.save();
 
     res.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
@@ -155,12 +168,13 @@ export const refresh = async (req, res) => {
 export const logout = async (req, res) => {
   try {
     const refreshToken = req.cookies.refreshToken;
+    const authHeader = req.headers.authorization;
+    const accessToken = authHeader ? authHeader.split(" ")[1] : null;
+
     if (refreshToken) {
-      const user = await User.findOne({ refreshToken });
-      if (user) {
-        user.refreshToken = "";
-        await user.save();
-      }
+      await Token.deleteOne({ refreshToken });
+    } else if (accessToken) {
+      await Token.deleteOne({ accessToken });
     }
 
     res.clearCookie("refreshToken", {

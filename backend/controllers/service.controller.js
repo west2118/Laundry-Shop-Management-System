@@ -116,7 +116,9 @@ export const getAllServices = async (req, res) => {
 
     const query = {};
     if (search) {
-      query.$or = [{ serviceName: { $regex: search, $options: "i" } }];
+      const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const safeSearch = escapeRegex(search);
+      query.$or = [{ serviceName: { $regex: safeSearch, $options: "i" } }];
     }
     if (category) {
       query.category = category;

@@ -11,9 +11,8 @@ import {
   getRecentOrders,
   getOrdersStatsData,
   getReportStatsData,
-  getMonthlySales,
   getDailySales,
-  getAverageRevenue,
+  getRevenueTrend,
   getMostUsedService,
 } from "../controllers/order.controller.js";
 import { verifyToken } from "../middleware/verifyToken.js";
@@ -32,9 +31,8 @@ router.get("/order-recent", verifyToken, getRecentOrders);
 router.get("/order-stats", verifyToken, getOrdersStatsData);
 
 router.get("/order-report-sales", verifyToken, getReportStatsData);
-router.get("/order-monthly-sales", verifyToken, getMonthlySales);
 router.get("/order-daily-sales", verifyToken, getDailySales);
-router.get("/order-average-revenue", verifyToken, getAverageRevenue);
+router.get("/order-revenue-trend", verifyToken, getRevenueTrend);
 router.get("/order-most-services", verifyToken, getMostUsedService);
 
 export default router;

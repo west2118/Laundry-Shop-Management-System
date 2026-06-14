@@ -7,10 +7,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import {
-  PieChart as PieChartIcon,
-  LineChart as LineChartIcon,
-} from "lucide-react";
+import { PieChart as PieChartIcon } from "lucide-react";
 import { pesoFormatter } from "../../lib/utils";
 import ReportMostServiceSkeleton from "../SkeletonLoading/ReportMostServiceSkeleton";
 
@@ -26,11 +23,16 @@ type ServiceUsageData = {
   totalOrders: number;
 };
 
-const ReportMostUsedServices = () => {
+type ReportMostUsedServicesProps = {
+  startDate: string;
+  endDate: string;
+};
+
+const ReportMostUsedServices = ({ startDate, endDate }: ReportMostUsedServicesProps) => {
   const { data: serviceUsageData, isLoading, error } = useQuery<ServiceUsageData>({
-    queryKey: ["report-most-services"],
+    queryKey: ["report-most-services", startDate, endDate],
     queryFn: async () => {
-      const res = await api.get("/order-most-services");
+      const res = await api.get(`/order-most-services?startDate=${startDate}&endDate=${endDate}`);
       return res.data;
     },
   });
@@ -38,7 +40,7 @@ const ReportMostUsedServices = () => {
   if (isLoading || !serviceUsageData) return <ReportMostServiceSkeleton />;
   if (error) return <div className="text-red-500">Failed to load most used services.</div>;
 
-  const COLORS = ["#3B82F6", "#10B981", "#F59E0B", "#EF4444"];
+  const COLORS = ["#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899", "#14B8A6"];
 
   const serviceUsageDataChart = serviceUsageData?.dataChart?.map(
     (item, index) => ({
@@ -50,14 +52,14 @@ const ReportMostUsedServices = () => {
   );
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col h-full">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl font-bold text-gray-800">
             Most Used Services
           </h2>
           <p className="text-gray-600 text-sm">
-            Service popularity and revenue distribution
+            Service popularity over selected date range
           </p>
         </div>
         <PieChartIcon className="h-6 w-6 text-purple-600" />
@@ -92,28 +94,6 @@ const ReportMostUsedServices = () => {
             <Legend />
           </PieChart>
         </ResponsiveContainer>
-      </div>
-
-      <div className="mt-6 space-y-3">
-        {serviceUsageDataChart?.map((service, index) => (
-          <div key={index} className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div
-                className="w-3 h-3 rounded-full mr-3"
-                style={{ backgroundColor: service.color }}
-              />
-              <span className="font-medium text-gray-900">{service.name}</span>
-            </div>
-            <div className="text-right">
-              <span className="font-bold text-gray-900">
-                {pesoFormatter.format(service.totalRevenue ?? 0)}
-              </span>
-              <span className="text-sm text-gray-500 block">
-                {service.totalOrders} orders
-              </span>
-            </div>
-          </div>
-        ))}
       </div>
     </div>
   );

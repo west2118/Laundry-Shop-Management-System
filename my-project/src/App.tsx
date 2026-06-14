@@ -3,6 +3,7 @@ import {
   createRoutesFromElements,
   Route,
   RouterProvider,
+  Navigate,
 } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import LaundryDashboard from "./pages/Dashboard";
@@ -15,20 +16,24 @@ import RegisterPage from "./pages/Register";
 import LoginPage from "./pages/Login";
 import { useSyncInfo } from "./hooks/useSyncInfo";
 import OrdersBoardPage from "./pages/OrdersBoard";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <>
-      <Route path="/admin" element={<Layout />}>
-        <Route index element={<LaundryDashboard />} />
-        <Route path="customers" element={<Customers />} />
-        <Route path="orders" element={<OrdersPage />} />
-        <Route path="services" element={<ServicesPage />} />
-        <Route path="reports" element={<ReportsPage />} />
-        <Route path="orders-board" element={<OrdersBoardPage />} />
+      <Route element={<ProtectedRoute />}>
+        <Route path="/admin" element={<Layout />}>
+          <Route index element={<LaundryDashboard />} />
+          <Route path="customers" element={<Customers />} />
+          <Route path="orders" element={<OrdersPage />} />
+          <Route path="services" element={<ServicesPage />} />
+          <Route path="reports" element={<ReportsPage />} />
+          <Route path="orders-board" element={<OrdersBoardPage />} />
+        </Route>
       </Route>
 
       <Route path="/">
+        <Route index element={<Navigate to="/login" replace />} />
         <Route path="register" element={<RegisterPage />} />
         <Route path="login" element={<LoginPage />} />
       </Route>

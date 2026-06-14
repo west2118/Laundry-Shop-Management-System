@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
+import Token from "../models/token.model.js";
 
-export const verifyToken = (req, res, next) => {
+export const verifyToken = async (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
 
   if (!token) {
@@ -12,6 +13,12 @@ export const verifyToken = (req, res, next) => {
       token,
       process.env.JWT_SECRET || "default_jwt_secret"
     );
+
+    const tokenDoc = await Token.findOne({ accessToken: token });
+    if (!tokenDoc) {
+      return res.status(401).json({ message: "Unauthorized: Token has been revoked" });
+    }
+
     req.user = decodedToken;
     next();
   } catch (error) {

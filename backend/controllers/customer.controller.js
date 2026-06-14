@@ -83,7 +83,9 @@ export const getAllCustomers = async (req, res) => {
 
     const query = {};
     if (search) {
-      query.$or = [{ fullName: { $regex: search, $options: "i" } }];
+      const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const safeSearch = escapeRegex(search);
+      query.$or = [{ fullName: { $regex: safeSearch, $options: "i" } }];
     }
 
     const total = await Customer.countDocuments(query);

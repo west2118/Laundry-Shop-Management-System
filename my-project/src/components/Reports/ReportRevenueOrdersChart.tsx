@@ -9,11 +9,7 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-import {
-  TrendingUp,
-  PieChart as PieChartIcon,
-  LineChart as LineChartIcon,
-} from "lucide-react";
+import { LineChart as LineChartIcon } from "lucide-react";
 import { pesoFormatter } from "../../lib/utils";
 import ReportChartSkeleton from "../SkeletonLoading/ReportChartSkeleton";
 
@@ -27,32 +23,36 @@ type DailySalesData = {
     totalOrders: number;
   }[];
   totalRevenue: number;
-  dateRange: string;
 };
 
-const ReportDailySalesChart = () => {
+type ReportRevenueOrdersChartProps = {
+  startDate: string;
+  endDate: string;
+};
+
+const ReportRevenueOrdersChart = ({ startDate, endDate }: ReportRevenueOrdersChartProps) => {
   const { data: dailySalesData, isLoading, error } = useQuery<DailySalesData>({
-    queryKey: ["report-daily-sales"],
+    queryKey: ["report-revenue-trend", startDate, endDate],
     queryFn: async () => {
-      const res = await api.get("/order-daily-sales");
+      const res = await api.get(`/order-revenue-trend?startDate=${startDate}&endDate=${endDate}`);
       return res.data;
     },
   });
 
   if (isLoading || !dailySalesData) return <ReportChartSkeleton />;
-  if (error) return <div className="text-red-500">Failed to load daily sales.</div>;
+  if (error) return <div className="text-red-500">Failed to load revenue trends.</div>;
 
-  const { chartData, totalRevenue, dateRange } = dailySalesData;
+  const { chartData, totalRevenue } = dailySalesData;
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl font-bold text-gray-800">
-            Daily Sales Performance
+            Revenue & Orders
           </h2>
           <p className="text-gray-600 text-sm">
-            Last 7 days revenue and order trends
+            Trend over selected date range
           </p>
         </div>
         <LineChartIcon className="h-6 w-6 text-green-600" />
@@ -66,15 +66,15 @@ const ReportDailySalesChart = () => {
             <YAxis stroke="#666" />
             <Tooltip
               formatter={(value, name) =>
-                name === "Revenue ($)"
-                  ? [`$${value?.toLocaleString()}`, name]
+                name === "Revenue (₱)"
+                  ? [`₱${value?.toLocaleString()}`, name]
                   : [value, name]
               }
             />
             <Legend />
             <Bar
               dataKey="totalAmount"
-              name="Revenue ($)"
+              name="Revenue (₱)"
               fill="#10B981"
               radius={[4, 4, 0, 0]}
             />
@@ -87,22 +87,8 @@ const ReportDailySalesChart = () => {
           </BarChart>
         </ResponsiveContainer>
       </div>
-
-      <div className="mt-6 pt-6 border-t border-gray-200">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="font-medium text-gray-900">Weekly Summary</p>
-            <p className="text-sm text-gray-600">{dateRange}</p>
-          </div>
-          <div className="text-right">
-            <p className="font-bold text-gray-900">
-              {pesoFormatter.format(totalRevenue ?? 0)}
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
 
-export default ReportDailySalesChart;
+export default ReportRevenueOrdersChart;

@@ -34,7 +34,7 @@ const CustomerTableRow = ({
             <p className="font-medium text-gray-900">{customer.fullName}</p>
             <p className="text-sm text-gray-500 flex items-center">
               <Calendar className="h-3 w-3 mr-1" />
-              Joined {dateConvert(customer.createdAt)}
+              Since {dateConvert(customer.createdAt)}
             </p>
           </div>
         </div>
