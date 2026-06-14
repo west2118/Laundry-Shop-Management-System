@@ -4,13 +4,13 @@ import type { ServiceType } from "../../lib/types";
 import ServiceTableRow from "./ServiceTableRow";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useDebounceInput } from "../../hooks/useDebounceInput";
-import { fetchData } from "../../lib/utils";
+import { useUserStore } from "../../stores/useUserStore";
 import Pagination from "../Pagination";
 import ServiceTableRowSkeleton from "../SkeletonLoading/ServiceTableRowSkeleton";
+import { fetchData } from "../../lib/utils";
 
 type ServiceTableProps = {
   handleSelectCard: (service: ServiceType, action: "edit" | "delete") => void;
-  token: string | null;
 };
 
 type DataType = {
@@ -20,7 +20,8 @@ type DataType = {
   page: number;
 };
 
-const ServiceTable = ({ handleSelectCard, token }: ServiceTableProps) => {
+const ServiceTable = ({ handleSelectCard }: ServiceTableProps) => {
+  const user = useUserStore((state) => state.user);
   const limit = 10;
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounceInput(search);
@@ -29,12 +30,10 @@ const ServiceTable = ({ handleSelectCard, token }: ServiceTableProps) => {
   const { data, isLoading } = useQuery<DataType>({
     queryKey: ["orders-data", page, limit, debouncedSearch],
     queryFn: fetchData(
-      `http://localhost:8080/api/v1/services?page=${page}&limit=${limit}${
-        debouncedSearch ? `&search=${debouncedSearch}` : ""
-      }`,
-      token
+      `http://localhost:8080/api/v1/services?page=${page}&limit=${limit}${debouncedSearch ? `&search=${debouncedSearch}` : ""
+      }`
     ),
-    enabled: !!token,
+    enabled: !!user,
     placeholderData: keepPreviousData,
   });
 

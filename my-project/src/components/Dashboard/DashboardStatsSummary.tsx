@@ -1,18 +1,28 @@
-import { CheckCircle, Clock, ShoppingBag, Truck } from "lucide-react";
+import { CheckCircle, Clock, ShoppingBag, Truck, AlertCircle } from "lucide-react";
 import React from "react";
 import CardsSkeleton from "../SkeletonLoading/CardsSkeleton";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "../../lib/axios";
 
-type DashboardStatsSummaryProps = {
-  ordersStats: {
-    pending: number;
-    pickedUp: number;
-    ready: number;
-    totalOrders: number;
-  };
-};
+const DashboardStatsSummary = () => {
+  const { data: ordersStats, isLoading, error } = useQuery({
+    queryKey: ["order-stats-weekly"],
+    queryFn: async () => {
+      const res = await api.get("/order-stats-weekly");
+      return res.data;
+    },
+  });
 
-const DashboardStatsSummary = ({ ordersStats }: DashboardStatsSummaryProps) => {
-  if (!ordersStats) return <CardsSkeleton />;
+  if (isLoading) return <CardsSkeleton />;
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center mb-8 flex items-center justify-center">
+        <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
+        <span className="text-red-700 font-medium">Failed to load stats summary</span>
+      </div>
+    );
+  }
+  if (!ordersStats) return null;
 
   const summaryData = [
     {

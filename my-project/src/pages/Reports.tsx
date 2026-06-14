@@ -1,7 +1,7 @@
 import {
   BarChart3,
   TrendingUp,
-  DollarSign,
+  PhilippinePeso,
   Users,
   Package,
   Calendar,
@@ -18,19 +18,19 @@ import {
 import ReportMonthlySales from "../components/Reports/ReportMonthlySales";
 import ReportMostUsedServices from "../components/Reports/ReportMostUsedServices";
 import ReportDailySalesChart from "../components/Reports/ReportDailySalesChart";
-import axios from "axios";
+import { api } from "../lib/axios";
 import { useUserStore } from "../stores/useUserStore";
 import { useQuery } from "@tanstack/react-query";
 import ReportStatsMetrics from "../components/Reports/ReportStatsMetrics";
 import ReportAverageRevenueChart from "../components/Reports/ReportAverageRevenueChart";
 
 const ReportsPage = () => {
-  const token = useUserStore((state) => state.userToken);
+  const user = useUserStore((state) => state.user);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["report-data"],
     queryFn: async () => {
-      if (!token) return null;
+      if (!user) return null;
 
       const [
         reportStatsRes,
@@ -39,21 +39,11 @@ const ReportsPage = () => {
         averageRevenueRes,
         orderMostRes,
       ] = await Promise.all([
-        axios.get("http://localhost:8080/api/v1/order-report-sales", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get("http://localhost:8080/api/v1/order-monthly-sales", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get("http://localhost:8080/api/v1/order-daily-sales", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get("http://localhost:8080/api/v1/order-average-revenue", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get("http://localhost:8080/api/v1/order-most-services", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
+        api.get("/order-report-sales"),
+        api.get("/order-monthly-sales"),
+        api.get("/order-daily-sales"),
+        api.get("/order-average-revenue"),
+        api.get("/order-most-services"),
       ]);
 
       return {
@@ -64,7 +54,7 @@ const ReportsPage = () => {
         orderMost: orderMostRes.data,
       };
     },
-    enabled: !!token,
+    enabled: !!user,
   });
 
   return (

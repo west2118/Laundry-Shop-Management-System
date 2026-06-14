@@ -1,28 +1,20 @@
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
-import admin from "firebase-admin";
-import { createRequire } from "module";
+import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 dotenv.config({ path: ".env" });
 
 const app = express();
-app.use(cors());
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(express.json());
+app.use(cookieParser());
 
 import userRoutes from "./routes/user.route.js";
 import serviceRoutes from "./routes/service.route.js";
 import customerRoutes from "./routes/customer.route.js";
 import orderRoutes from "./routes/order.route.js";
-
-const require = createRequire(import.meta.url);
-const serviceAccount = require("./serviceAccountKey.json");
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: process.env.FIREBASE_DB_URL,
-});
-
+import authRoutes from "./routes/auth.route.js";
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
@@ -35,6 +27,7 @@ mongoose
     console.error("❌ MongoDB connection failed:", err.message);
   });
 
+app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1", userRoutes);
 app.use("/api/v1", serviceRoutes);
 app.use("/api/v1", customerRoutes);

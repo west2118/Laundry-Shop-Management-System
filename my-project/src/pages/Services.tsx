@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   Plus,
   Filter,
-  DollarSign,
+  PhilippinePeso,
   CheckCircle,
   TrendingUp,
   ShoppingBag,
@@ -20,7 +20,6 @@ import StatsSummaryServices from "../components/Services/StatsSummaryServices";
 import ModalDelete from "../components/Services/ServiceModalDelete";
 
 const ServicesPage = () => {
-  const token = useUserStore((state) => state.userToken);
   const [isEdit, setIsEdit] = useState(false);
   const [isServiceFormModalOpen, setIsServiceFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -77,13 +76,12 @@ const ServicesPage = () => {
       </div>
 
       {/* Main Content Area */}
-      <ServiceTable handleSelectCard={handleSelectCard} token={token} />
+      <ServiceTable handleSelectCard={handleSelectCard} />
 
       {isServiceFormModalOpen && (
         <ServiceModalForm
           isModalOpen={isServiceFormModalOpen}
           isCloseModal={closeServiceFormModal}
-          token={token}
           isEdit={isEdit}
           selectedService={selectedService ?? null}
         />
@@ -93,7 +91,6 @@ const ServicesPage = () => {
         <ModalDelete
           isModalOpen={isDeleteModalOpen}
           isCloseModal={closeDeleteModal}
-          token={token}
           selectedItem={selectedService ?? null}
           title="Service"
         />

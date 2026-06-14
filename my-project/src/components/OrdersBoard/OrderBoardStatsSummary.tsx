@@ -1,19 +1,43 @@
 import React from "react";
 import type { OrderColumnType, OrderType } from "../../lib/types";
 import OrderBoardStatsSummarySkeleton from "../SkeletonLoading/OrderBoardStatsSummarySkeleton";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "../../lib/axios";
+import { AlertCircle } from "lucide-react";
 
 const OrderBoardStatsSummary = ({
   columns,
-  orders,
 }: {
   columns: OrderColumnType[];
-  orders: OrderType[];
 }) => {
-  if (!orders) return <OrderBoardStatsSummarySkeleton />;
+  const { data: orders, isLoading, error } = useQuery({
+    queryKey: ["order-today"],
+    queryFn: async () => {
+      const res = await api.get("/order-today");
+      return res.data as OrderType[];
+    },
+  });
+
+  if (isLoading) return <OrderBoardStatsSummarySkeleton />;
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center mt-6 flex items-center justify-center">
+        <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
+        <span className="text-red-700 font-medium">Failed to load board stats summary</span>
+      </div>
+    );
+  }
+  if (!orders) return null;
+
+  // Create a local copy of columns with calculated counts
+  const columnsWithCounts = columns.map(col => ({
+    ...col,
+    count: orders.filter((order: OrderType) => order.orderStatus === col.id).length
+  }));
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-      {columns.map((column) => {
+      {columnsWithCounts.map((column) => {
         const Icon = column.icon;
 
         return (

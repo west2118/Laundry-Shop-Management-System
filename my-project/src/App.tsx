@@ -12,6 +12,7 @@ import OrdersPage from "./pages/Orders";
 import ServicesPage from "./pages/Services";
 import ReportsPage from "./pages/Reports";
 import RegisterPage from "./pages/Register";
+import LoginPage from "./pages/Login";
 import { useSyncInfo } from "./hooks/useSyncInfo";
 import OrdersBoardPage from "./pages/OrdersBoard";
 
@@ -29,6 +30,7 @@ const router = createBrowserRouter(
 
       <Route path="/">
         <Route path="register" element={<RegisterPage />} />
+        <Route path="login" element={<LoginPage />} />
       </Route>
     </>
   )

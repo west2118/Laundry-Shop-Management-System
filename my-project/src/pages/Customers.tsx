@@ -11,7 +11,6 @@ import { fetchData } from "../lib/utils";
 import ModalDelete from "../components/Services/ServiceModalDelete";
 
 const Customers = () => {
-  const token = useUserStore((state) => state.userToken);
   const [isEdit, setIsEdit] = useState(false);
   const [isCustomerFormModal, setIsCustomerFormModal] = useState(false);
   const [isCustomerDetailsModal, setIsCustomerDetailsModal] = useState(false);
@@ -80,7 +79,6 @@ const Customers = () => {
         <CustomerModalForm
           isModalOpen={isCustomerFormModal}
           isCloseModal={closeCustomerFormModal}
-          token={token}
           isEdit={isEdit}
           selectedCustomer={selectedCustomer ?? null}
         />
@@ -98,7 +96,6 @@ const Customers = () => {
         <ModalDelete
           isModalOpen={isDeleteModalOpen}
           isCloseModal={closeDeleteModal}
-          token={token}
           selectedItem={selectedCustomer ?? null}
           title="Customer"
         />

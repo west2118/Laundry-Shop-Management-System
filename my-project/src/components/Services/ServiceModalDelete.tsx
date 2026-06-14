@@ -2,12 +2,11 @@ import { X, AlertTriangle, Loader, Trash2 } from "lucide-react";
 import { startTransition, useEffect, useTransition } from "react";
 import type { CustomerType, OrderType, ServiceType } from "../../lib/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
+import { api } from "../../lib/axios";
 import { toast } from "react-toastify";
 import Modal from "../UI/Modal";
 
 type ModalDeleteProps = {
-  token: string | null;
   isModalOpen: boolean;
   isCloseModal: () => void;
   selectedItem: ServiceType | CustomerType | OrderType | null;
@@ -15,7 +14,6 @@ type ModalDeleteProps = {
 };
 
 const ModalDelete = ({
-  token,
   isModalOpen,
   isCloseModal,
   selectedItem,
@@ -26,13 +24,10 @@ const ModalDelete = ({
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const res = await axios.delete(
-        `http://localhost:8080/api/v1/${title.toLowerCase()}/${
+      const res = await api.delete(
+        `/${title.toLowerCase()}/${
           selectedItem?._id
-        }`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        }`
       );
 
       return res?.data;

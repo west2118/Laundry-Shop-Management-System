@@ -1,4 +1,4 @@
-import axios from "axios";
+import { api } from "./axios";
 import type { OrderStatus } from "./types";
 import {
   CheckCircle,
@@ -11,16 +11,13 @@ import {
 } from "lucide-react";
 
 export const fetchData =
-  (url: string, token: string | null, withParams = false) =>
+  (url: string, withParams = false) =>
   async ({ queryKey }: { queryKey: any }) => {
     const [_key, param] = queryKey;
     const finalUrl = withParams ? `${url}/${param}` : url;
+    const pathUrl = finalUrl.replace("http://localhost:8080/api/v1", "");
 
-    const res = await axios.get(finalUrl, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const res = await api.get(pathUrl);
 
     return res.data;
   };

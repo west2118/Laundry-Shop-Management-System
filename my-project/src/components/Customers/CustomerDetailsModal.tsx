@@ -4,7 +4,7 @@ import {
   MapPin,
   FileText,
   ShoppingBag,
-  DollarSign,
+  PhilippinePeso,
   Calendar,
   User,
   Download,
@@ -111,7 +111,7 @@ const CustomerDetailsModal = ({
 
             <div className="flex justify-between items-center">
               <span className="text-gray-600 flex items-center">
-                <DollarSign className="h-4 w-4 mr-2" />
+                <PhilippinePeso className="h-4 w-4 mr-2" />
                 Total Spent
               </span>
               <span className="font-bold text-gray-800">$287.50</span>

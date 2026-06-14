@@ -5,7 +5,7 @@ import { parseAndBuildQuery } from "../utils/query.utils.js";
 
 export const postService = async (req, res) => {
   try {
-    const { uid } = req.user;
+    const { id: userId } = req.user;
     const {
       serviceName,
       description,
@@ -17,7 +17,7 @@ export const postService = async (req, res) => {
       status,
     } = req.body;
 
-    const user = await User.findOne({ uid });
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(400).json({ message: "User didn't exist" });
     }
@@ -49,11 +49,11 @@ export const postService = async (req, res) => {
 
 export const putService = async (req, res) => {
   try {
-    const { uid } = req.user;
+    const { id: userId } = req.user;
     const { id } = req.params;
     const { formData } = req.body;
 
-    const user = await User.findOne({ uid });
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(400).json({ message: "User didn't exist" });
     }
@@ -87,9 +87,9 @@ export const putService = async (req, res) => {
 
 export const getServices = async (req, res) => {
   try {
-    const { uid } = req.user;
+    const { id: userId } = req.user;
 
-    const user = await User.findOne({ uid });
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(400).json({ message: "User didn't exist" });
     }
@@ -105,9 +105,9 @@ export const getServices = async (req, res) => {
 
 export const getAllServices = async (req, res) => {
   try {
-    const { uid } = req.user;
+    const { id: userId } = req.user;
 
-    const user = await User.findOne({ uid });
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(400).json({ message: "User didn't exist" });
     }
@@ -170,10 +170,10 @@ export const getAllServices = async (req, res) => {
 
 export const deleteService = async (req, res) => {
   try {
-    const { uid } = req.user;
+    const { id: userId } = req.user;
     const { id } = req.params;
 
-    const user = await User.findOne({ uid });
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(400).json({ message: "User didn't exist" });
     }

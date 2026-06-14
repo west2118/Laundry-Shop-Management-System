@@ -3,7 +3,7 @@ import Modal from "../UI/Modal";
 import {
   Plus,
   User,
-  DollarSign,
+  PhilippinePeso,
   Tag,
   Percent,
   FileText,
@@ -20,17 +20,14 @@ import {
 import { useForm } from "../../hooks/useForm";
 import type { CustomerType, OrderType, ServiceType } from "../../lib/types";
 import OrderServiceItem from "./OrderServiceItem";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { api } from "../../lib/axios";
 import { toast } from "react-toastify";
 
 type OrderModalFormProps = {
   isModalOpen: boolean;
   isCloseModal: () => void;
-  token: string | null;
   isEdit: boolean;
-  services: ServiceType[] | null;
-  customers: CustomerType[] | null;
   selectedOrder: OrderType | null;
 };
 
@@ -62,12 +59,9 @@ type FormOrderData = {
 };
 
 const OrderModalForm = ({
-  token,
   isModalOpen,
   isCloseModal,
   isEdit,
-  services,
-  customers,
   selectedOrder,
 }: OrderModalFormProps) => {
   const queryClient = useQueryClient();
@@ -84,6 +78,25 @@ const OrderModalForm = ({
     email: "",
     contact: "",
   });
+
+  const { data: services, isLoading: isLoadingServices } = useQuery({
+    queryKey: ["services-data"],
+    queryFn: async () => {
+      const res = await api.get("/service");
+      return res.data as ServiceType[];
+    },
+    enabled: isModalOpen,
+  });
+
+  const { data: customers, isLoading: isLoadingCustomers } = useQuery({
+    queryKey: ["customers-data"],
+    queryFn: async () => {
+      const res = await api.get("/customer");
+      return res.data as CustomerType[];
+    },
+    enabled: isModalOpen,
+  });
+
   const [formOrderData, setFormOrderData] = useState<FormOrderData>({
     items: [
       {
@@ -190,6 +203,22 @@ const OrderModalForm = ({
 
   const mutation = useMutation({
     mutationFn: async (formData: FormData) => {
+      if (!formData.customer) {
+        throw new Error("Please select a customer");
+      }
+      if (formData.customer === "new" && !formCustomerData.fullName) {
+        throw new Error("Please provide the new customer's full name");
+      }
+      if (formOrderData.items.some((i) => !i.service)) {
+        throw new Error("Please select a service for all items");
+      }
+      if (!formData.paymentStatus) {
+        throw new Error("Please select a payment status");
+      }
+      if (!formData.itemDescription) {
+        throw new Error("Please provide an item description");
+      }
+
       let res;
 
       const payload = {
@@ -206,17 +235,12 @@ const OrderModalForm = ({
       if (isEdit) {
         if (!selectedOrder) return;
 
-        res = await axios.put(
-          `http://localhost:8080/api/v1/order/${selectedOrder?._id}`,
-          { payload },
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+        res = await api.put(
+          `/order/${selectedOrder?._id}`,
+          { payload }
         );
       } else {
-        res = await axios.post("http://localhost:8080/api/v1/order", payload, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        res = await api.post("/order", payload);
       }
 
       return res.data;
@@ -227,16 +251,16 @@ const OrderModalForm = ({
       queryClient.invalidateQueries({ queryKey: ["order-stats-data"] });
       queryClient.invalidateQueries({ queryKey: ["order-board-data"] });
       queryClient.invalidateQueries({ queryKey: ["orders-data"] });
+      queryClient.invalidateQueries({ queryKey: ["order-today"] });
     },
-    onError: () => {
-      toast.error("Something went wrong");
+    onError: (error: any) => {
+      toast.error(error.response?.data?.error || error.response?.data?.message || error.message || "Something went wrong");
     },
   });
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
-
-    startTransition(async () => mutation.mutate(formData));
+    mutation.mutate(formData);
   };
 
   return (
@@ -257,7 +281,7 @@ const OrderModalForm = ({
               value={formData.customer}
               onChange={(e) => setField("customer", e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="">Select customer</option>
+              <option value="">{isLoadingCustomers ? "Loading customers..." : "Select customer"}</option>
               {customers?.map((customer) => (
                 <option key={customer._id} value={customer._id}>
                   {customer.fullName}
@@ -354,7 +378,7 @@ const OrderModalForm = ({
               key={index}
               index={index}
               item={item}
-              services={services}
+              services={services ?? []}
               handleOrderFormChange={handleOrderFormChange}
             />
           ))}

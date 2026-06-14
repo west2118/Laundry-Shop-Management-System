@@ -1,47 +1,18 @@
 import { useState } from "react";
-import { Package, Plus, Filter } from "lucide-react";
-import { useUserStore } from "../stores/useUserStore";
+import { Package, Plus } from "lucide-react";
 import OrderModalForm from "../components/Orders/OrderModalForm";
 import OrderModalDetails from "../components/Orders/OrderModalDetails";
 import OrderTable from "../components/Orders/OrderTable";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import OrderStatsSummary from "../components/Orders/OrderStatsSummary";
 import type { OrderType } from "../lib/types";
 import ModalDelete from "../components/Services/ServiceModalDelete";
+
 const OrdersPage = () => {
-  const token = useUserStore((state) => state.userToken);
   const [isOrderFormModalOpen, setIsOrderFormModalOpen] = useState(false);
   const [isOrderDetailsModalOpen, setIsOrderDetailsModalOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["order-stats-data"],
-    queryFn: async () => {
-      if (!token) return null;
-
-      const [orderStatsRes, customersRes, servicesRes] = await Promise.all([
-        axios.get("http://localhost:8080/api/v1/order-stats", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get("http://localhost:8080/api/v1/customer", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get("http://localhost:8080/api/v1/service", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ]);
-
-      return {
-        orderStats: orderStatsRes.data,
-        customers: customersRes.data,
-        services: servicesRes.data,
-      };
-    },
-    enabled: !!token,
-  });
 
   const handleSelectOrder = (
     order: OrderType,
@@ -97,10 +68,10 @@ const OrdersPage = () => {
           </button>
         </div>
 
-        <OrderStatsSummary orderStats={data?.orderStats} />
+        <OrderStatsSummary />
       </div>
 
-      <OrderTable handleSelectOrder={handleSelectOrder} token={token} />
+      <OrderTable handleSelectOrder={handleSelectOrder} />
 
       {isOrderDetailsModalOpen && (
         <OrderModalDetails
@@ -114,11 +85,8 @@ const OrdersPage = () => {
         <OrderModalForm
           isModalOpen={isOrderFormModalOpen}
           isCloseModal={closeOrderFormModal}
-          token={token}
           isEdit={isEdit}
           selectedOrder={selectedOrder ?? null}
-          services={data?.services ?? null}
-          customers={data?.customers ?? null}
         />
       )}
 
@@ -126,7 +94,6 @@ const OrdersPage = () => {
         <ModalDelete
           isModalOpen={isDeleteModalOpen}
           isCloseModal={closeDeleteModal}
-          token={token}
           selectedItem={selectedOrder ?? null}
           title="Order"
         />

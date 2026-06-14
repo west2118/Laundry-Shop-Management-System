@@ -3,14 +3,13 @@ import Modal from "../UI/Modal";
 import { useEffect, useTransition } from "react";
 import { useForm } from "../../hooks/useForm";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
+import { api } from "../../lib/axios";
 import type { CustomerType } from "../../lib/types";
 import { toast } from "react-toastify";
 
 type CustomerModalFormProps = {
   isModalOpen: boolean;
   isCloseModal: () => void;
-  token: string | null;
   isEdit: boolean;
   selectedCustomer: CustomerType | null;
 };
@@ -26,7 +25,6 @@ const CustomerModalForm = ({
   isCloseModal,
   isEdit,
   selectedCustomer,
-  token,
 }: CustomerModalFormProps) => {
   const queryClient = useQueryClient();
   const [isPending, startTransition] = useTransition();
@@ -51,20 +49,14 @@ const CustomerModalForm = ({
       if (isEdit) {
         if (!selectedCustomer) return;
 
-        res = await axios.put(
-          `http://localhost:8080/api/v1/customer/${selectedCustomer?._id}`,
-          { formData },
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+        res = await api.put(
+          `/customer/${selectedCustomer?._id}`,
+          { formData }
         );
       } else {
-        res = await axios.post(
-          "http://localhost:8080/api/v1/customer",
-          formData,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+        res = await api.post(
+          "/customer",
+          formData
         );
       }
 

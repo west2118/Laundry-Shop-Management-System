@@ -1,4 +1,4 @@
-import { BarChartIcon, TrendingUp } from "lucide-react";
+import { BarChartIcon, TrendingUp, AlertCircle } from "lucide-react";
 import React from "react";
 import type { OrderType } from "../../lib/types";
 import {
@@ -8,18 +8,31 @@ import {
 } from "../../lib/utils";
 import RecentOrdersSkeleton from "../SkeletonLoading/RecentOrdersSkeleton";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "../../lib/axios";
 
-type DashboardRecentOrdersProps = {
-  ordersRecent: OrderType[];
-};
+const DashboardRecentOrders = () => {
+  const { data: ordersRecent, isLoading, error } = useQuery({
+    queryKey: ["order-recent"],
+    queryFn: async () => {
+      const res = await api.get("/order-recent");
+      return res.data as OrderType[];
+    },
+  });
 
-const DashboardRecentOrders = ({
-  ordersRecent,
-}: DashboardRecentOrdersProps) => {
-  if (!ordersRecent) return <RecentOrdersSkeleton />;
+  if (isLoading) return <RecentOrdersSkeleton />;
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-xl p-6 h-full flex flex-col items-center justify-center">
+        <AlertCircle className="h-8 w-8 text-red-500 mb-2" />
+        <span className="text-red-700 font-medium">Failed to load recent orders</span>
+      </div>
+    );
+  }
+  if (!ordersRecent) return null;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden h-full flex flex-col">
       <div className="px-6 py-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div>
@@ -33,7 +46,7 @@ const DashboardRecentOrders = ({
       </div>
 
       {/* Responsive table container */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto flex-1">
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
@@ -66,7 +79,7 @@ const DashboardRecentOrders = ({
                 <tr key={order._id} className="hover:bg-gray-50">
                   <td className="py-4 px-6">
                     <span className="font-medium text-blue-600">
-                      {order._id}
+                      {order._id.slice(0, 8)}...
                     </span>
                   </td>
                   <td className="py-4 px-6">

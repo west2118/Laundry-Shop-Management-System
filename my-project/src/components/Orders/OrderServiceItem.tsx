@@ -1,4 +1,4 @@
-import { DollarSign, Tag } from "lucide-react";
+import { PhilippinePeso, Tag } from "lucide-react";
 import type { ServiceType } from "../../lib/types";
 
 type OrderServiceItemProps = {
@@ -31,7 +31,7 @@ const OrderServiceItem = ({
             handleOrderFormChange(index, "service", e.target.value)
           }
           className="w-full px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-          <option>Select service</option>
+          <option value="">Select service</option>
           {services?.map((service) => (
             <option key={service._id} value={service._id}>
               {service?.serviceName}
@@ -57,7 +57,7 @@ const OrderServiceItem = ({
       </div>
       <div>
         <label className="text-sm font-medium text-gray-700 mb-1 flex items-center">
-          <DollarSign className="h-4 w-4 mr-2" />
+          <PhilippinePeso className="h-4 w-4 mr-2" />
           Weight Quantity
         </label>
         <input

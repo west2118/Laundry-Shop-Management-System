@@ -1,13 +1,20 @@
-import admin from "firebase-admin";
+import jwt from "jsonwebtoken";
 
-export const verifyToken = async (req, res, next) => {
-  const idToken = req.headers.authorization?.split(" ")[1];
+export const verifyToken = (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized: No token provided" });
+  }
 
   try {
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const decodedToken = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "default_jwt_secret"
+    );
     req.user = decodedToken;
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Unauthorized" });
+    return res.status(401).json({ message: "Unauthorized: Invalid or expired token" });
   }
 };
