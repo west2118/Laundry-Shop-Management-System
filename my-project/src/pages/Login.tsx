@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import { useNavigate, Link } from "react-router-dom";
 import { useForm } from "../hooks/useForm";
 import { api, setAccessToken } from "../lib/axios";
+import { useUserStore } from "../stores/useUserStore";
 
 type FormData = {
   email: "";
@@ -12,6 +13,7 @@ type FormData = {
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const setUser = useUserStore((state) => state.setUser);
   const { formData, handleChange } = useForm<FormData>({
     email: "",
     password: "",
@@ -35,6 +37,7 @@ const LoginPage = () => {
         });
 
         setAccessToken(response.data.accessToken);
+        setUser(response.data.user);
         navigate("/admin");
         toast.success(response.data.message || "Successfully logged in");
       } catch (error: any) {

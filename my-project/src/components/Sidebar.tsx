@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useUserStore } from "../stores/useUserStore";
-import { api } from "../lib/axios";
+import { api, removeAccessToken } from "../lib/axios";
 import { toast } from "react-toastify";
 
 const Sidebar = () => {
@@ -29,7 +29,7 @@ const Sidebar = () => {
       console.error("Logout error", error);
     } finally {
       clearUser();
-      localStorage.removeItem("token");
+      removeAccessToken();
       navigate("/login")
       toast.success("Logged out successfully");
     }
@@ -48,7 +48,7 @@ const Sidebar = () => {
     { label: "Reports", icon: BarChart3, to: "reports" },
   ];
 
-  const fullName = `${user?.firstName} ${user?.lastName}`
+  const fullName = user ? `${user.firstName} ${user.lastName}` : "Loading...";
 
   return (
     <>
@@ -77,13 +77,26 @@ const Sidebar = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center overflow-hidden mr-2">
               <div className="shrink-0">
-                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
-                  <User className="h-5 w-5" />
-                </div>
+                {user ? (
+                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                    <User className="h-5 w-5" />
+                  </div>
+                ) : (
+                  <div className="w-8 h-8 bg-gray-200 animate-pulse rounded-full" />
+                )}
               </div>
               <div className="ml-3 truncate">
-                <p className="text-sm font-medium text-gray-700 truncate">{fullName}</p>
-                <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                {user ? (
+                  <>
+                    <p className="text-sm font-medium text-gray-700 truncate">{fullName}</p>
+                    <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                  </>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="h-4 bg-gray-200 rounded w-24 animate-pulse"></div>
+                    <div className="h-3 bg-gray-200 rounded w-32 animate-pulse"></div>
+                  </div>
+                )}
               </div>
             </div>
             <button

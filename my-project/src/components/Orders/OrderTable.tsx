@@ -25,7 +25,6 @@ type DataType = {
 };
 
 const OrderTable = ({ handleSelectOrder }: OrderTableProps) => {
-  const user = useUserStore((state) => state.user);
   const limit = 10;
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -64,11 +63,9 @@ const OrderTable = ({ handleSelectOrder }: OrderTableProps) => {
   const { data: ordersData, isLoading: isOrdersLoading } = useQuery<DataType>({
     queryKey: ["orders-data", page, limit, debouncedSearch, status],
     queryFn: fetchData(
-      `http://localhost:8080/api/v1/orders?page=${page}${
-        status !== "All" ? `&status=${status}` : ""
+      `http://localhost:8080/api/v1/orders?page=${page}${status !== "All" ? `&status=${status}` : ""
       }&limit=${limit}${debouncedSearch ? `&search=${debouncedSearch}` : ""}`
     ),
-    enabled: !!user,
     placeholderData: keepPreviousData,
   });
 
