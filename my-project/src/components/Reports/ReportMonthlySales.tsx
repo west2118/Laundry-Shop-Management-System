@@ -19,20 +19,32 @@ import {
 import { pesoFormatter } from "../../lib/utils";
 import ReportMonthlySkeleton from "../SkeletonLoading/ReportMonthlySkeleton";
 
-type ReportMonthlySalesProps = {
-  monthlySalesData: {
-    chartData: {
-      date: string;
-      totalAmount: number;
-      totalOrders: number;
-    }[];
-    totalRevenue: number;
+import { useQuery } from "@tanstack/react-query";
+import { api } from "../../lib/axios";
+
+type MonthlySalesData = {
+  chartData: {
+    date: string;
+    totalAmount: number;
     totalOrders: number;
-  };
+  }[];
+  totalRevenue: number;
+  totalOrders: number;
 };
 
-const ReportMonthlySales = ({ monthlySalesData }: ReportMonthlySalesProps) => {
-  if (!monthlySalesData) return <ReportMonthlySkeleton />;
+const ReportMonthlySales = () => {
+  const { data: monthlySalesData, isLoading, error } = useQuery<MonthlySalesData>({
+    queryKey: ["report-monthly-sales"],
+    queryFn: async () => {
+      const res = await api.get("/order-monthly-sales");
+      return res.data;
+    },
+  });
+
+  if (isLoading || !monthlySalesData) return <ReportMonthlySkeleton />;
+  if (error) return <div className="text-red-500">Failed to load monthly sales.</div>;
+
+  const { chartData, totalRevenue, totalOrders } = monthlySalesData;
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -54,7 +66,7 @@ const ReportMonthlySales = ({ monthlySalesData }: ReportMonthlySalesProps) => {
 
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={monthlySalesData?.chartData}>
+          <AreaChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis dataKey="date" stroke="#666" />
             <YAxis stroke="#666" />
@@ -96,7 +108,7 @@ const ReportMonthlySales = ({ monthlySalesData }: ReportMonthlySalesProps) => {
             <div>
               <p className="text-sm text-gray-600">Total Revenue</p>
               <p className="text-xl font-bold text-gray-900">
-                {pesoFormatter.format(monthlySalesData?.totalRevenue ?? 0)}
+                {pesoFormatter.format(totalRevenue ?? 0)}
               </p>
             </div>
           </div>
@@ -109,7 +121,7 @@ const ReportMonthlySales = ({ monthlySalesData }: ReportMonthlySalesProps) => {
             <div>
               <p className="text-sm text-gray-600">Total Orders</p>
               <p className="text-xl font-bold text-gray-900">
-                {monthlySalesData?.totalOrders}
+                {totalOrders}
               </p>
             </div>
           </div>

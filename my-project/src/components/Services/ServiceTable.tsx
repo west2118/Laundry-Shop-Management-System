@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
+import { useSearchParams } from "react-router-dom";
 import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 import type { ServiceType } from "../../lib/types";
 import ServiceTableRow from "./ServiceTableRow";
@@ -23,15 +24,45 @@ type DataType = {
 const ServiceTable = ({ handleSelectCard }: ServiceTableProps) => {
   const user = useUserStore((state) => state.user);
   const limit = 10;
-  const [search, setSearch] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const search = searchParams.get("search") || "";
+  const category = searchParams.get("category") || "All";
+  const page = parseInt(searchParams.get("page") || "1", 10);
+
   const debouncedSearch = useDebounceInput(search);
-  const [page, setPage] = useState(1);
+
+  const setPage = (value: React.SetStateAction<number>) => {
+    setSearchParams((prev) => {
+      const next = typeof value === "function" ? value(page) : value;
+      prev.set("page", next.toString());
+      return prev;
+    }, { replace: true });
+  };
+
+  const setSearch = (newSearch: string) => {
+    setSearchParams((prev) => {
+      if (!newSearch) prev.delete("search");
+      else prev.set("search", newSearch);
+      prev.set("page", "1");
+      return prev;
+    }, { replace: true });
+  };
+
+  const setCategory = (newCategory: string) => {
+    setSearchParams((prev) => {
+      if (newCategory === "All") prev.delete("category");
+      else prev.set("category", newCategory);
+      prev.set("page", "1");
+      return prev;
+    }, { replace: true });
+  };
 
   const { data, isLoading } = useQuery<DataType>({
-    queryKey: ["orders-data", page, limit, debouncedSearch],
+    queryKey: ["orders-data", page, limit, debouncedSearch, category],
     queryFn: fetchData(
-      `http://localhost:8080/api/v1/services?page=${page}&limit=${limit}${debouncedSearch ? `&search=${debouncedSearch}` : ""
-      }`
+      `http://localhost:8080/api/v1/services?page=${page}&limit=${limit}${category !== "All" ? `&category=${category}` : ""
+      }${debouncedSearch ? `&search=${debouncedSearch}` : ""}`
     ),
     enabled: !!user,
     placeholderData: keepPreviousData,
@@ -48,14 +79,23 @@ const ServiceTable = ({ handleSelectCard }: ServiceTableProps) => {
             </p>
           </div>
           <div className="mt-3 md:mt-0 flex items-center space-x-3">
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+              <option value="All">All Categories</option>
+              <option value="basic">Basic</option>
+              <option value="premium">Premium</option>
+              <option value="express">Express</option>
+              <option value="discount">Discount</option>
+              <option value="additional">Additional</option>
+              <option value="unknown">unknown</option>
+            </select>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
                 value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
+                onChange={(e) => setSearch(e.target.value)}
                 type="text"
                 placeholder="Search orders..."
                 className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full md:w-64"

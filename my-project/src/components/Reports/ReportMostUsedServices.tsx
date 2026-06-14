@@ -14,21 +14,29 @@ import {
 import { pesoFormatter } from "../../lib/utils";
 import ReportMostServiceSkeleton from "../SkeletonLoading/ReportMostServiceSkeleton";
 
-type ReportMostUsedServicesProps = {
-  serviceUsageData: {
-    dataChart: {
-      _id: string;
-      totalOrders: number;
-      totalRevenue: number;
-    }[];
+import { useQuery } from "@tanstack/react-query";
+import { api } from "../../lib/axios";
+
+type ServiceUsageData = {
+  dataChart: {
+    _id: string;
     totalOrders: number;
-  };
+    totalRevenue: number;
+  }[];
+  totalOrders: number;
 };
 
-const ReportMostUsedServices = ({
-  serviceUsageData,
-}: ReportMostUsedServicesProps) => {
-  if (!serviceUsageData) return <ReportMostServiceSkeleton />;
+const ReportMostUsedServices = () => {
+  const { data: serviceUsageData, isLoading, error } = useQuery<ServiceUsageData>({
+    queryKey: ["report-most-services"],
+    queryFn: async () => {
+      const res = await api.get("/order-most-services");
+      return res.data;
+    },
+  });
+
+  if (isLoading || !serviceUsageData) return <ReportMostServiceSkeleton />;
+  if (error) return <div className="text-red-500">Failed to load most used services.</div>;
 
   const COLORS = ["#3B82F6", "#10B981", "#F59E0B", "#EF4444"];
 

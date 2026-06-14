@@ -74,9 +74,24 @@ export const getAllOrders = async (req, res) => {
 
     const query = {};
     if (search) {
+      const customerIds = await Customer.find({
+        fullName: { $regex: search, $options: "i" },
+      }).distinct("_id");
+
       query.$or = [
         { paymentStatus: { $regex: search, $options: "i" } },
         { orderStatus: { $regex: search, $options: "i" } },
+        { "items.serviceName": { $regex: search, $options: "i" } },
+        { customer: { $in: customerIds } },
+        {
+          $expr: {
+            $regexMatch: {
+              input: { $toString: "$_id" },
+              regex: search,
+              options: "i",
+            },
+          },
+        },
       ];
     }
 

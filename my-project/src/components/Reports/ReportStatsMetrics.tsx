@@ -10,20 +10,20 @@ import { pesoFormatter } from "../../lib/utils";
 import ReportStatCard from "./ReportStatCard";
 import ReportStatsSkeleton from "../SkeletonLoading/ReportStatsSkeleton";
 
-type ReportStatsMetricsProps = {
-  reportStats: {
-    aovData: number;
-    monthlyGrowth: number;
-    repeatRate: number;
-    totalCustomers: number;
-    revenueToday: number;
-    totalOrders: number;
-    totalRevenue: number;
-  };
-};
+import { useQuery } from "@tanstack/react-query";
+import { api } from "../../lib/axios";
 
-const ReportStatsMetrics = ({ reportStats }: ReportStatsMetricsProps) => {
-  if (!reportStats) return <ReportStatsSkeleton />;
+const ReportStatsMetrics = () => {
+  const { data: reportStats, isLoading, error } = useQuery({
+    queryKey: ["report-stats"],
+    queryFn: async () => {
+      const res = await api.get("/order-report-sales");
+      return res.data;
+    },
+  });
+
+  if (isLoading || !reportStats) return <ReportStatsSkeleton />;
+  if (error) return <div className="text-red-500">Failed to load stats.</div>;
 
   const reportStatsChart = [
     {

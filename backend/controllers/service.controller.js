@@ -112,11 +112,14 @@ export const getAllServices = async (req, res) => {
       return res.status(400).json({ message: "User didn't exist" });
     }
 
-    const { page, limit, skip, search } = parseAndBuildQuery(req);
+    const { page, limit, skip, search, category } = parseAndBuildQuery(req);
 
     const query = {};
     if (search) {
       query.$or = [{ serviceName: { $regex: search, $options: "i" } }];
+    }
+    if (category) {
+      query.category = category;
     }
 
     const total = await Service.countDocuments(query);
