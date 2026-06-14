@@ -1,62 +1,14 @@
 import {
   BarChart3,
-  TrendingUp,
-  PhilippinePeso,
-  Users,
-  Package,
-  Calendar,
   Download,
-  ChevronDown,
-  PieChart as PieChartIcon,
-  LineChart as LineChartIcon,
-  Zap,
-  Sparkles,
-  Wind,
-  Thermometer,
-  RefreshCw,
 } from "lucide-react";
 import ReportMonthlySales from "../components/Reports/ReportMonthlySales";
 import ReportMostUsedServices from "../components/Reports/ReportMostUsedServices";
 import ReportDailySalesChart from "../components/Reports/ReportDailySalesChart";
-import { api } from "../lib/axios";
-import { useUserStore } from "../stores/useUserStore";
-import { useQuery } from "@tanstack/react-query";
 import ReportStatsMetrics from "../components/Reports/ReportStatsMetrics";
 import ReportAverageRevenueChart from "../components/Reports/ReportAverageRevenueChart";
 
 const ReportsPage = () => {
-  const user = useUserStore((state) => state.user);
-
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["report-data"],
-    queryFn: async () => {
-      if (!user) return null;
-
-      const [
-        reportStatsRes,
-        monthlySalesRes,
-        dailySalesRes,
-        averageRevenueRes,
-        orderMostRes,
-      ] = await Promise.all([
-        api.get("/order-report-sales"),
-        api.get("/order-monthly-sales"),
-        api.get("/order-daily-sales"),
-        api.get("/order-average-revenue"),
-        api.get("/order-most-services"),
-      ]);
-
-      return {
-        reportStats: reportStatsRes.data,
-        monthlySales: monthlySalesRes.data,
-        dailySales: dailySalesRes.data,
-        averageRevenue: averageRevenueRes.data,
-        orderMost: orderMostRes.data,
-      };
-    },
-    enabled: !!user,
-  });
-
   return (
     <div className="min-h-screen p-4 md:p-6">
       {/* Page Header */}
@@ -80,25 +32,25 @@ const ReportsPage = () => {
         </div>
 
         {/* Key Metrics */}
-        <ReportStatsMetrics reportStats={data?.reportStats} />
+        <ReportStatsMetrics />
       </div>
 
       {/* Main Content Area */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Monthly Sales Chart */}
-        <ReportMonthlySales monthlySalesData={data?.monthlySales} />
+        <ReportMonthlySales />
 
         {/* Most Used Services */}
-        <ReportDailySalesChart dailySalesData={data?.dailySales} />
+        <ReportDailySalesChart />
       </div>
 
       {/* Daily Sales & Detailed Reports */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Daily Sales Chart */}
-        <ReportAverageRevenueChart averageRevenueData={data?.averageRevenue} />
+        <ReportAverageRevenueChart />
 
         {/* Revenue by Service Type */}
-        <ReportMostUsedServices serviceUsageData={data?.orderMost} />
+        <ReportMostUsedServices />
       </div>
     </div>
   );

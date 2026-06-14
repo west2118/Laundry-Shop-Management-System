@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
+import { useSearchParams } from "react-router-dom";
 import { Search } from "lucide-react";
 import type { OrderType } from "../../lib/types";
 import { fetchData } from "../../lib/utils";
@@ -26,10 +27,39 @@ type DataType = {
 const OrderTable = ({ handleSelectOrder }: OrderTableProps) => {
   const user = useUserStore((state) => state.user);
   const limit = 10;
-  const [status, setStatus] = useState("All");
-  const [search, setSearch] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const status = searchParams.get("status") || "All";
+  const search = searchParams.get("search") || "";
+  const page = parseInt(searchParams.get("page") || "1", 10);
+
   const debouncedSearch = useDebounceInput(search);
-  const [page, setPage] = useState(1);
+
+  const setPage = (value: React.SetStateAction<number>) => {
+    setSearchParams((prev) => {
+      const next = typeof value === "function" ? value(page) : value;
+      prev.set("page", next.toString());
+      return prev;
+    }, { replace: true });
+  };
+
+  const setStatus = (newStatus: string) => {
+    setSearchParams((prev) => {
+      if (newStatus === "All") prev.delete("status");
+      else prev.set("status", newStatus);
+      prev.set("page", "1");
+      return prev;
+    }, { replace: true });
+  };
+
+  const setSearch = (newSearch: string) => {
+    setSearchParams((prev) => {
+      if (!newSearch) prev.delete("search");
+      else prev.set("search", newSearch);
+      prev.set("page", "1");
+      return prev;
+    }, { replace: true });
+  };
 
   const { data: ordersData, isLoading: isOrdersLoading } = useQuery<DataType>({
     queryKey: ["orders-data", page, limit, debouncedSearch, status],
@@ -55,10 +85,7 @@ const OrderTable = ({ handleSelectOrder }: OrderTableProps) => {
           <div className="mt-3 md:mt-0 flex items-center space-x-3">
             <select
               value={status}
-              onChange={(e) => {
-                setStatus(e.target.value);
-                setPage(1);
-              }}
+              onChange={(e) => setStatus(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
               <option value="All">All Status</option>
               <option value="pending">Pending</option>
@@ -70,10 +97,7 @@ const OrderTable = ({ handleSelectOrder }: OrderTableProps) => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
                 value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
+                onChange={(e) => setSearch(e.target.value)}
                 type="text"
                 placeholder="Search orders..."
                 className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full md:w-64"

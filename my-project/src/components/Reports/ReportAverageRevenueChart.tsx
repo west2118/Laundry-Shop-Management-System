@@ -11,18 +11,26 @@ import { TrendingUp } from "lucide-react";
 import { pesoFormatter } from "../../lib/utils";
 import ReportChartSkeleton from "../SkeletonLoading/ReportChartSkeleton";
 
-type ReportAverageRevenueChartProps = {
-  averageRevenueData: {
-    averageToday: number;
-    averageMonthly: number;
-    averageWeekly: number;
-  };
+import { useQuery } from "@tanstack/react-query";
+import { api } from "../../lib/axios";
+
+type AverageRevenueData = {
+  averageToday: number;
+  averageMonthly: number;
+  averageWeekly: number;
 };
 
-const ReportAverageRevenueChart = ({
-  averageRevenueData,
-}: ReportAverageRevenueChartProps) => {
-  if (!averageRevenueData) return <ReportChartSkeleton />;
+const ReportAverageRevenueChart = () => {
+  const { data: averageRevenueData, isLoading, error } = useQuery<AverageRevenueData>({
+    queryKey: ["report-average-revenue"],
+    queryFn: async () => {
+      const res = await api.get("/order-average-revenue");
+      return res.data;
+    },
+  });
+
+  if (isLoading || !averageRevenueData) return <ReportChartSkeleton />;
+  if (error) return <div className="text-red-500">Failed to load average revenue.</div>;
 
   const aovChartData = [
     { period: "Today", value: averageRevenueData.averageToday },

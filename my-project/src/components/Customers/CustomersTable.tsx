@@ -1,5 +1,6 @@
 import { Search } from "lucide-react";
-import React, { useState } from "react";
+import React from "react";
+import { useSearchParams } from "react-router-dom";
 import type { CustomerType } from "../../lib/types";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useUserStore } from "../../stores/useUserStore";
@@ -27,12 +28,32 @@ const CustomersTable = ({ handleSelectCustomer }: CustomersTableProps) => {
   const user = useUserStore((state) => state.user);
 
   const limit = 10;
-  const [search, setSearch] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const search = searchParams.get("search") || "";
+  const page = parseInt(searchParams.get("page") || "1", 10);
+
   const debouncedSearch = useDebounceInput(search);
-  const [page, setPage] = useState(1);
+
+  const setPage = (value: React.SetStateAction<number>) => {
+    setSearchParams((prev) => {
+      const next = typeof value === "function" ? value(page) : value;
+      prev.set("page", next.toString());
+      return prev;
+    }, { replace: true });
+  };
+
+  const setSearch = (newSearch: string) => {
+    setSearchParams((prev) => {
+      if (!newSearch) prev.delete("search");
+      else prev.set("search", newSearch);
+      prev.set("page", "1");
+      return prev;
+    }, { replace: true });
+  };
 
   const { data, isLoading } = useQuery<DataType>({
-    queryKey: ["customer-data", page, limit, debouncedSearch, status],
+    queryKey: ["customer-data", page, limit, debouncedSearch],
     queryFn: fetchData(
       `http://localhost:8080/api/v1/customers?page=${page}&limit=${limit}${
         debouncedSearch ? `&search=${debouncedSearch}` : ""
@@ -59,10 +80,7 @@ const CustomersTable = ({ handleSelectCustomer }: CustomersTableProps) => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
                 value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
+                onChange={(e) => setSearch(e.target.value)}
                 type="text"
                 placeholder="Search customers..."
                 className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full md:w-64"

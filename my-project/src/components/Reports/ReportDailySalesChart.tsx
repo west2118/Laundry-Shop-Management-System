@@ -17,22 +17,32 @@ import {
 import { pesoFormatter } from "../../lib/utils";
 import ReportChartSkeleton from "../SkeletonLoading/ReportChartSkeleton";
 
-type ReportDailySalesChartProps = {
-  dailySalesData: {
-    chartData: {
-      date: string;
-      totalAmount: number;
-      totalOrders: number;
-    }[];
-    totalRevenue: number;
-    dateRange: string;
-  };
+import { useQuery } from "@tanstack/react-query";
+import { api } from "../../lib/axios";
+
+type DailySalesData = {
+  chartData: {
+    date: string;
+    totalAmount: number;
+    totalOrders: number;
+  }[];
+  totalRevenue: number;
+  dateRange: string;
 };
 
-const ReportDailySalesChart = ({
-  dailySalesData,
-}: ReportDailySalesChartProps) => {
-  if (!dailySalesData) return <ReportChartSkeleton />;
+const ReportDailySalesChart = () => {
+  const { data: dailySalesData, isLoading, error } = useQuery<DailySalesData>({
+    queryKey: ["report-daily-sales"],
+    queryFn: async () => {
+      const res = await api.get("/order-daily-sales");
+      return res.data;
+    },
+  });
+
+  if (isLoading || !dailySalesData) return <ReportChartSkeleton />;
+  if (error) return <div className="text-red-500">Failed to load daily sales.</div>;
+
+  const { chartData, totalRevenue, dateRange } = dailySalesData;
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -50,7 +60,7 @@ const ReportDailySalesChart = ({
 
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={dailySalesData.chartData}>
+          <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis dataKey="date" stroke="#666" />
             <YAxis stroke="#666" />
@@ -82,16 +92,12 @@ const ReportDailySalesChart = ({
         <div className="flex items-center justify-between">
           <div>
             <p className="font-medium text-gray-900">Weekly Summary</p>
-            <p className="text-sm text-gray-600">{dailySalesData?.dateRange}</p>
+            <p className="text-sm text-gray-600">{dateRange}</p>
           </div>
           <div className="text-right">
             <p className="font-bold text-gray-900">
-              {pesoFormatter.format(dailySalesData?.totalRevenue ?? 0)}
+              {pesoFormatter.format(totalRevenue ?? 0)}
             </p>
-            {/* <p className="text-sm text-green-600 flex items-center">
-              <TrendingUp className="h-3 w-3 mr-1" />
-              +8.5% from last week
-            </p> */}
           </div>
         </div>
       </div>
