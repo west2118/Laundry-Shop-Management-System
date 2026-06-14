@@ -1,22 +1,34 @@
-import { Package, DollarSign, PackageOpen, Users } from "lucide-react";
+import { Package, PhilippinePeso, PackageOpen, Users, AlertCircle } from "lucide-react";
 import CardsSkeleton from "../SkeletonLoading/CardsSkeleton";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "../../lib/axios";
 
-type OrderStatsSummaryProps = {
-  orderStats: {
-    revenueToday: number;
-    todayOrders: number;
-    totalCustomers: number;
-    totalOrders: number;
-  };
-};
+const OrderStatsSummary = () => {
+  const { data: orderStats, isLoading, error } = useQuery({
+    queryKey: ["order-stats-data"],
+    queryFn: async () => {
+      const res = await api.get("/order-stats");
+      return res.data;
+    },
+  });
 
-const OrderStatsSummary = ({ orderStats }: OrderStatsSummaryProps) => {
-  if (!orderStats)
+  if (isLoading)
     return (
       <div className="mt-6">
         <CardsSkeleton />
       </div>
     );
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center mt-6 flex items-center justify-center">
+        <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
+        <span className="text-red-700 font-medium">Failed to load order stats</span>
+      </div>
+    );
+  }
+
+  if (!orderStats) return null;
 
   const summaryData = [
     {
@@ -36,7 +48,7 @@ const OrderStatsSummary = ({ orderStats }: OrderStatsSummaryProps) => {
     {
       title: "Revenue Today",
       value: `₱${orderStats.revenueToday.toFixed(2)}`,
-      icon: DollarSign,
+      icon: PhilippinePeso,
       bg: "bg-purple-100",
       iconColor: "text-purple-600",
     },

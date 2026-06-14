@@ -13,21 +13,32 @@ import {
   Activity,
   PieChart as PieChartIcon,
   BarChart as BarChartIcon,
+  AlertCircle,
 } from "lucide-react";
 import { statusColor } from "../../lib/contants";
 import OrderStatusSkeleton from "../SkeletonLoading/OrderStatusSkeleton";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "../../lib/axios";
 
-type DashboardStatusProps = {
-  statusDistributionData: {
-    totalOrders: number;
-    pending: number;
-    ready: number;
-    pickedUp: number;
-  };
-};
+const DashboardStatus = () => {
+  const { data: statusDistributionData, isLoading, error } = useQuery({
+    queryKey: ["order-stats-weekly"],
+    queryFn: async () => {
+      const res = await api.get("/order-stats-weekly");
+      return res.data;
+    },
+  });
 
-const DashboardStatus = ({ statusDistributionData }: DashboardStatusProps) => {
-  if (!statusDistributionData) return <OrderStatusSkeleton />;
+  if (isLoading) return <OrderStatusSkeleton />;
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-xl p-6 h-full flex flex-col items-center justify-center">
+        <AlertCircle className="h-8 w-8 text-red-500 mb-2" />
+        <span className="text-red-700 font-medium">Failed to load order status</span>
+      </div>
+    );
+  }
+  if (!statusDistributionData) return null;
 
   const statsArray = Object.entries(statusDistributionData).map(
     ([key, value]) => ({
@@ -39,7 +50,7 @@ const DashboardStatus = ({ statusDistributionData }: DashboardStatusProps) => {
   );
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-full">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-bold text-gray-800">Order Status</h3>
         <Activity className="h-5 w-5 text-green-500" />
@@ -60,7 +71,7 @@ const DashboardStatus = ({ statusDistributionData }: DashboardStatusProps) => {
               />
               <span className="text-gray-700">{item.label}</span>
             </div>
-            <span className="font-bold text-gray-800">{item.value}</span>
+            <span className="font-bold text-gray-800">{item.value as React.ReactNode}</span>
           </div>
         ))}
       </div>

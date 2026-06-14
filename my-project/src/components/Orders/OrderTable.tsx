@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Search } from "lucide-react";
 import type { OrderType } from "../../lib/types";
 import { fetchData } from "../../lib/utils";
+import { useUserStore } from "../../stores/useUserStore";
 import { useDebounceInput } from "../../hooks/useDebounceInput";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import Pagination from "../Pagination";
@@ -13,7 +14,6 @@ type OrderTableProps = {
     order: OrderType,
     action: "edit" | "delete" | "details"
   ) => void;
-  token: string | null;
 };
 
 type DataType = {
@@ -23,7 +23,8 @@ type DataType = {
   page: number;
 };
 
-const OrderTable = ({ handleSelectOrder, token }: OrderTableProps) => {
+const OrderTable = ({ handleSelectOrder }: OrderTableProps) => {
+  const user = useUserStore((state) => state.user);
   const limit = 10;
   const [status, setStatus] = useState("All");
   const [search, setSearch] = useState("");
@@ -35,10 +36,9 @@ const OrderTable = ({ handleSelectOrder, token }: OrderTableProps) => {
     queryFn: fetchData(
       `http://localhost:8080/api/v1/orders?page=${page}${
         status !== "All" ? `&status=${status}` : ""
-      }&limit=${limit}${debouncedSearch ? `&search=${debouncedSearch}` : ""}`,
-      token
+      }&limit=${limit}${debouncedSearch ? `&search=${debouncedSearch}` : ""}`
     ),
-    enabled: !!token,
+    enabled: !!user,
     placeholderData: keepPreviousData,
   });
 

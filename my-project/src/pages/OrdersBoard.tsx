@@ -1,57 +1,23 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Package,
   Clock,
   RefreshCw,
   CheckCircle,
   Truck,
-  Filter,
   Plus,
 } from "lucide-react";
 import OrderBoard from "../components/OrdersBoard/OrderBoard";
 import OrderBoardStatsSummary from "../components/OrdersBoard/OrderBoardStatsSummary";
-import { useQuery } from "@tanstack/react-query";
-import { useUserStore } from "../stores/useUserStore";
-import axios from "axios";
 import type { OrderColumnType, OrderType } from "../lib/types";
 import OrderModalDetails from "../components/Orders/OrderModalDetails";
 import OrderModalForm from "../components/Orders/OrderModalForm";
-import ModalDelete from "../components/Services/ServiceModalDelete";
-import OrderBoardStatsSummarySkeleton from "../components/SkeletonLoading/OrderBoardStatsSummarySkeleton";
 
 const OrdersBoardPage = () => {
-  const token = useUserStore((state) => state.userToken);
   const [isOrderFormModalOpen, setIsOrderFormModalOpen] = useState(false);
   const [isOrderDetailsModalOpen, setIsOrderDetailsModalOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["order-board-data"],
-    queryFn: async () => {
-      if (!token) return null;
-
-      const [orderRes, customersRes, servicesRes] = await Promise.all([
-        axios.get("http://localhost:8080/api/v1/order-today", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get("http://localhost:8080/api/v1/customer", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get("http://localhost:8080/api/v1/service", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ]);
-
-      return {
-        orders: orderRes.data,
-        customers: customersRes.data,
-        services: servicesRes.data,
-      };
-    },
-    enabled: !!token,
-  });
 
   const handleSelectOrder = (
     order: OrderType,
@@ -109,15 +75,6 @@ const OrdersBoardPage = () => {
     },
   ];
 
-  // Calculate counts for each column
-  columns.forEach((col) => {
-    if (!data?.orders) return;
-
-    col.count =
-      data?.orders?.filter((order: OrderType) => order.orderStatus === col.id)
-        .length ?? 0;
-  });
-
   return (
     <div className="min-h-screen p-4 md:p-6">
       {/* Page Header */}
@@ -143,14 +100,12 @@ const OrdersBoardPage = () => {
         </div>
 
         {/* Stats Summary */}
-        <OrderBoardStatsSummary columns={columns} orders={data?.orders} />
+        <OrderBoardStatsSummary columns={columns} />
       </div>
 
       {/* Drag and Drop Board */}
       <OrderBoard
         columns={columns}
-        orders={data?.orders ?? null}
-        token={token}
         handleSelectOrder={handleSelectOrder}
       />
 
@@ -166,11 +121,8 @@ const OrdersBoardPage = () => {
         <OrderModalForm
           isModalOpen={isOrderFormModalOpen}
           isCloseModal={closeOrderFormModal}
-          token={token}
           isEdit={isEdit}
           selectedOrder={selectedOrder ?? null}
-          services={data?.services ?? null}
-          customers={data?.customers ?? null}
         />
       )}
     </div>

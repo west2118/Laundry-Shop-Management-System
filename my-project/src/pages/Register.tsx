@@ -1,11 +1,9 @@
 import { Lock, Mail, Key, User, Eye, EyeOff, Loader } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "react-toastify";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "../hooks/useForm";
-import { auth } from "../lib/firebase";
+import { api } from "../lib/axios";
 
 type FormData = {
   firstName: string;
@@ -47,27 +45,12 @@ const RegisterPage = () => {
 
     startTransition(async () => {
       try {
-        const userCredential = await createUserWithEmailAndPassword(
-          auth,
-          formData.email,
-          formData.password
-        );
-
-        const token = await userCredential.user.getIdToken();
-
-        const response = await axios.post(
-          "http://localhost:8080/api/v1/user",
-          {
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            email: formData.email,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await api.post("/auth/register", {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          password: formData.password,
+        });
 
         navigate("/admin");
         toast.success(response?.data?.message);
@@ -248,6 +231,7 @@ const RegisterPage = () => {
                 Already have an account?{" "}
                 <button
                   type="button"
+                  onClick={() => navigate('/login')}
                   className="text-blue-600 hover:text-blue-700 font-semibold transition-colors">
                   Sign in
                 </button>

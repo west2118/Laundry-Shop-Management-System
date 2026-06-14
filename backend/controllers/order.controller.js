@@ -13,7 +13,7 @@ import { buildAovPipeline, parseAndBuildQuery } from "../utils/query.utils.js";
 
 export const postOrder = async (req, res) => {
   try {
-    const { uid } = req.user;
+    const { id: userId } = req.user;
     const {
       customer,
       items,
@@ -26,7 +26,7 @@ export const postOrder = async (req, res) => {
 
     let customerId;
 
-    const user = await User.findOne({ uid });
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(400).json({ message: "User didn't exist" });
     }
@@ -63,9 +63,9 @@ export const postOrder = async (req, res) => {
 
 export const getAllOrders = async (req, res) => {
   try {
-    const { uid } = req.user;
+    const { id: userId } = req.user;
 
-    const user = await User.findOne({ uid });
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(400).json({ message: "User didn't exist" });
     }
@@ -105,10 +105,10 @@ export const getAllOrders = async (req, res) => {
 
 export const getAllOrdersBoard = async (req, res) => {
   try {
-    const { uid } = req.user;
+    const { id: userId } = req.user;
     const { start, end } = getTodayRange();
 
-    const user = await User.findOne({ uid });
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(400).json({ message: "User didn't exist" });
     }
@@ -139,11 +139,11 @@ export const getAllOrdersBoard = async (req, res) => {
 
 export const putOrder = async (req, res) => {
   try {
-    const { uid } = req.user;
+    const { id: userId } = req.user;
     const { id } = req.params;
     const { payload } = req.body;
 
-    const user = await User.findOne({ uid });
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(400).json({ message: "User didn't exist" });
     }
@@ -169,10 +169,10 @@ export const putOrder = async (req, res) => {
 
 export const deleteOrder = async (req, res) => {
   try {
-    const { uid } = req.user;
+    const { id: userId } = req.user;
     const { id } = req.params;
 
-    const user = await User.findOne({ uid });
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(400).json({ message: "User didn't exist" });
     }
@@ -193,7 +193,7 @@ export const deleteOrder = async (req, res) => {
 
 export const updateOrderStatus = async (req, res) => {
   try {
-    const { uid } = req.user;
+    const { id: userId } = req.user;
     const { id } = req.params;
     const { orderStatus } = req.body;
 
@@ -203,7 +203,7 @@ export const updateOrderStatus = async (req, res) => {
       return res.status(400).json({ message: "Invalid status" });
     }
 
-    const user = await User.findOne({ uid });
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(400).json({ message: "User didn't exist" });
     }
@@ -516,11 +516,11 @@ export const getReportStatsData = async (req, res) => {
 
 export const getMonthlySales = async (req, res) => {
   try {
-    const { uid } = req.user;
+    const { id: userId } = req.user;
 
     const { start, end } = getYearlyRange();
 
-    const user = await User.findOne({ uid });
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(400).json({ message: "User didn't exist" });
     }
@@ -657,9 +657,9 @@ export const getAverageRevenue = async (req, res) => {
 
 export const getMostUsedService = async (req, res) => {
   try {
-    const { uid } = req.user;
+    const { id: userId } = req.user;
 
-    const user = await User.findOne({ uid });
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(400).json({ message: "User didn't exist" });
     }

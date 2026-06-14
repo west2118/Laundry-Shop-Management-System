@@ -11,10 +11,30 @@ import {
   Workflow,
   CircuitBoard,
   Package2,
+  LogOut,
 } from "lucide-react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useUserStore } from "../stores/useUserStore";
+import { api } from "../lib/axios";
+import { toast } from "react-toastify";
 
 const Sidebar = () => {
+  const navigate = useNavigate()
+  const { user, clearUser } = useUserStore();
+
+  const handleLogout = async () => {
+    try {
+      await api.post("/auth/logout");
+    } catch (error) {
+      console.error("Logout error", error);
+    } finally {
+      clearUser();
+      localStorage.removeItem("token");
+      navigate("/login")
+      toast.success("Logged out successfully");
+    }
+  };
+
   const navClass = (isActive: boolean) =>
     `flex items-center px-4 py-3 rounded-lg transition
   ${isActive ? "bg-blue-600 text-white" : "text-gray-700 hover:bg-gray-100"}`;
@@ -27,6 +47,8 @@ const Sidebar = () => {
     { label: "Services", icon: Workflow, to: "services" },
     { label: "Reports", icon: BarChart3, to: "reports" },
   ];
+
+  const fullName = `${user?.firstName} ${user?.lastName}`
 
   return (
     <>
@@ -52,16 +74,25 @@ const Sidebar = () => {
           </nav>
         </div>
         <div className="border-t border-gray-200 p-4">
-          <div className="flex items-center">
-            <div className="shrink-0">
-              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
-                <User className="h-5 w-5" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center overflow-hidden mr-2">
+              <div className="shrink-0">
+                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                  <User className="h-5 w-5" />
+                </div>
+              </div>
+              <div className="ml-3 truncate">
+                <p className="text-sm font-medium text-gray-700 truncate">{fullName}</p>
+                <p className="text-xs text-gray-500 truncate">{user?.email}</p>
               </div>
             </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-700">Admin User</p>
-              <p className="text-xs text-gray-500">admin@laundrypro.com</p>
-            </div>
+            <button
+              onClick={handleLogout}
+              className="p-2 shrink-0 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              title="Logout"
+            >
+              <LogOut className="h-5 w-5" />
+            </button>
           </div>
         </div>
       </div>

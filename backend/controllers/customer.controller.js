@@ -4,10 +4,10 @@ import { parseAndBuildQuery } from "../utils/query.utils.js";
 
 export const postCustomer = async (req, res) => {
   try {
-    const { uid } = req.user;
+    const { id: userId } = req.user;
     const { fullName, email, contact } = req.body;
 
-    const user = await User.findOne({ uid });
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(400).json({ message: "User didn't exist" });
     }
@@ -34,11 +34,11 @@ export const postCustomer = async (req, res) => {
 
 export const putCustomer = async (req, res) => {
   try {
-    const { uid } = req.user;
+    const { id: userId } = req.user;
     const { id } = req.params;
     const { formData } = req.body;
 
-    const user = await User.findOne({ uid });
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(400).json({ message: "User didn't exist" });
     }
@@ -72,9 +72,9 @@ export const putCustomer = async (req, res) => {
 
 export const getAllCustomers = async (req, res) => {
   try {
-    const { uid } = req.user;
+    const { id: userId } = req.user;
 
-    const user = await User.findOne({ uid });
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(400).json({ message: "User didn't exist" });
     }
@@ -131,9 +131,9 @@ export const getAllCustomers = async (req, res) => {
 
 export const getCustomers = async (req, res) => {
   try {
-    const { uid } = req.user;
+    const { id: userId } = req.user;
 
-    const user = await User.findOne({ uid });
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(400).json({ message: "User didn't exist" });
     }
@@ -149,10 +149,10 @@ export const getCustomers = async (req, res) => {
 
 export const deleteCustomer = async (req, res) => {
   try {
-    const { uid } = req.user;
+    const { id: userId } = req.user;
     const { id } = req.params;
 
-    const user = await User.findOne({ uid });
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(400).json({ message: "User didn't exist" });
     }

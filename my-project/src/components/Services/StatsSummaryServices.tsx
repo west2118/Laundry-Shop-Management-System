@@ -1,6 +1,6 @@
 import {
   CheckCircle,
-  DollarSign,
+  PhilippinePeso,
   Layers,
   PackageOpen,
   ShoppingBag,
@@ -35,7 +35,7 @@ const StatsSummaryServices = () => {
             </p>
           </div>
           <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-            <DollarSign className="h-6 w-6 text-purple-600" />
+            <PhilippinePeso className="h-6 w-6 text-purple-600" />
           </div>
         </div>
       </div>

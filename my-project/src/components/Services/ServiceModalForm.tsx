@@ -10,19 +10,18 @@ import {
   Layers,
   Settings,
   FileText,
-  DollarSign,
+  PhilippinePeso,
   Timer,
   Loader,
 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
+import { api } from "../../lib/axios";
 import type { ServiceType } from "../../lib/types";
 import { startTransition, useEffect, useTransition } from "react";
 
 type ServiceModalProps = {
   isModalOpen: boolean;
   isCloseModal: () => void;
-  token: string | null;
   isEdit: boolean;
   selectedService: ServiceType | null;
 };
@@ -41,7 +40,6 @@ type FormData = {
 const ServiceModalForm = ({
   isModalOpen,
   isCloseModal,
-  token,
   isEdit,
   selectedService,
 }: ServiceModalProps) => {
@@ -78,20 +76,14 @@ const ServiceModalForm = ({
       if (isEdit) {
         if (!selectedService) return;
 
-        res = await axios.put(
-          `http://localhost:8080/api/v1/service/${selectedService?._id}`,
-          { formData },
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+        res = await api.put(
+          `/service/${selectedService?._id}`,
+          { formData }
         );
       } else {
-        res = await axios.post(
-          "http://localhost:8080/api/v1/service",
-          formData,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+        res = await api.post(
+          "/service",
+          formData
         );
       }
 
@@ -174,7 +166,7 @@ const ServiceModalForm = ({
             {/* Price per kg */}
             <div className="flex flex-col">
               <label className="mb-1 text-sm font-medium text-gray-700 flex items-center gap-2">
-                <DollarSign className="h-4 w-4" />
+                <PhilippinePeso className="h-4 w-4" />
                 Price per kg
               </label>
               <input
