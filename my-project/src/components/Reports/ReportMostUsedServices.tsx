@@ -66,34 +66,41 @@ const ReportMostUsedServices = ({ startDate, endDate }: ReportMostUsedServicesPr
       </div>
 
       <div className="h-80">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={serviceUsageDataChart}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={({ name, percent }) =>
-                `${name}: ${(percent! * 100).toFixed(1)}%`
-              }
-              outerRadius={80}
-              fill="#8884d8"
-              dataKey="totalOrders">
-              {serviceUsageDataChart.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip
-              formatter={(value, name, props) => [
-                `${value} orders (₱${props.payload.totalRevenue.toLocaleString(
-                  "en-PH"
-                )})`,
-                name,
-              ]}
-            />
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
+        {serviceUsageDataChart && serviceUsageDataChart.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-gray-500">
+            <PieChartIcon className="h-12 w-12 text-gray-300 mb-2" />
+            <p>No service data available for this period.</p>
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={serviceUsageDataChart}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ name, percent }) =>
+                  `${name}: ${(percent! * 100).toFixed(1)}%`
+                }
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="totalOrders">
+                {serviceUsageDataChart?.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip
+                formatter={(value, name, props) => [
+                  `${value} orders (₱${props.payload.totalRevenue.toLocaleString(
+                    "en-PH"
+                  )})`,
+                  name,
+                ]}
+              />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        )}
       </div>
     </div>
   );

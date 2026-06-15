@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   Plus,
   Filter,
@@ -27,7 +27,7 @@ const ServicesPage = () => {
     null
   );
 
-  const handleSelectCard = (
+  const handleSelectCard = useCallback((
     service: ServiceType,
     action: "edit" | "delete"
   ) => {
@@ -39,18 +39,18 @@ const ServicesPage = () => {
     } else {
       setIsDeleteModalOpen(true);
     }
-  };
+  }, []);
 
-  const closeServiceFormModal = () => {
+  const closeServiceFormModal = useCallback(() => {
     setIsServiceFormModalOpen(false);
     setIsEdit(false);
     setSelectedService(null);
-  };
+  }, []);
 
-  const closeDeleteModal = () => {
+  const closeDeleteModal = useCallback(() => {
     setIsDeleteModalOpen(false);
     setSelectedService(null);
-  };
+  }, []);
 
   return (
     <div className="min-h-screen p-4 md:p-6">
@@ -66,14 +66,19 @@ const ServicesPage = () => {
               Manage laundry services, pricing, and categories
             </p>
           </div>
-          <button
-            onClick={() => setIsServiceFormModalOpen(true)}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition flex items-center">
-            <Plus className="mr-2 h-4 w-4" />
-            Add Service
-          </button>
+          <div className="mt-4 md:mt-0 flex">
+            <button
+              onClick={() => setIsServiceFormModalOpen(true)}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition flex items-center">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Service
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Stats Summary */}
+      <StatsSummaryServices />
 
       {/* Main Content Area */}
       <ServiceTable handleSelectCard={handleSelectCard} />

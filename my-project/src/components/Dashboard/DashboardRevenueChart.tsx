@@ -25,6 +25,7 @@ const DashboardRevenueChart = () => {
       const res = await api.get("/order-daily-sales");
       return res.data;
     },
+    staleTime: 60_000,
   });
 
   if (isLoading) return <RevenueSkeleton />;

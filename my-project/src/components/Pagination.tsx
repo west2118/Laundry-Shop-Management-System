@@ -60,11 +60,10 @@ const Pagination = ({
             key={num}
             onClick={() => setPage(num)}
             className={`h-8 w-8 text-sm rounded-md border transition
-          ${
-            num === page
-              ? "bg-blue-700 text-white border-blue-700"
-              : "bg-white text-blue-700 border-blue-200 hover:bg-blue-100"
-          }`}>
+          ${num === page
+                ? "bg-blue-700 text-white border-blue-700"
+                : "bg-white text-blue-700 border-blue-200 hover:bg-blue-100"
+              }`}>
             {num}
           </button>
         ))}

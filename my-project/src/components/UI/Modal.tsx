@@ -32,7 +32,6 @@ const Modal = ({
 
   return ReactDOM.createPortal(
     <div
-      onClick={isCloseModal}
       className="fixed inset-0 flex items-center justify-center bg-black/50 p-4 z-50">
       <div
         onClick={(e) => e.stopPropagation()}

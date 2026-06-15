@@ -3,15 +3,15 @@ import Token from "../models/token.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-const generateTokens = (userId) => {
+const generateTokens = (userId, role) => {
   const accessToken = jwt.sign(
-    { id: userId },
+    { id: userId, role },
     process.env.JWT_SECRET || "default_jwt_secret",
     { expiresIn: "15m" }
   );
 
   const refreshToken = jwt.sign(
-    { id: userId },
+    { id: userId, role },
     process.env.JWT_REFRESH_SECRET || "default_jwt_refresh_secret",
     { expiresIn: "7d" }
   );
@@ -41,8 +41,10 @@ export const register = async (req, res) => {
       email,
       password: hashedPassword,
     });
+    
+    await newUser.save();
 
-    const { accessToken, refreshToken } = generateTokens(newUser._id);
+    const { accessToken, refreshToken } = generateTokens(newUser._id, newUser.role);
     
     await Token.create({
       userId: newUser._id,
@@ -65,6 +67,8 @@ export const register = async (req, res) => {
         firstName: newUser.firstName,
         lastName: newUser.lastName,
         email: newUser.email,
+        role: newUser.role,
+        status: newUser.status,
       },
     });
   } catch (error) {
@@ -91,7 +95,7 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    const { accessToken, refreshToken } = generateTokens(user._id);
+    const { accessToken, refreshToken } = generateTokens(user._id, user.role);
 
     await Token.create({
       userId: user._id,
@@ -114,6 +118,8 @@ export const login = async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
+        role: user.role,
+        status: user.status,
       },
     });
   } catch (error) {
@@ -145,7 +151,7 @@ export const refresh = async (req, res) => {
       return res.status(403).json({ message: "Forbidden: User not found" });
     }
 
-    const { accessToken, refreshToken: newRefreshToken } = generateTokens(user._id);
+    const { accessToken, refreshToken: newRefreshToken } = generateTokens(user._id, user.role);
 
     tokenDoc.accessToken = accessToken;
     tokenDoc.refreshToken = newRefreshToken;

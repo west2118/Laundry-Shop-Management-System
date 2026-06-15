@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   BarChart,
   Bar,
@@ -27,7 +27,20 @@ const DashboardStatus = () => {
       const res = await api.get("/order-stats-weekly");
       return res.data;
     },
+    staleTime: 60_000,
   });
+
+  const statsArray = useMemo(() => {
+    if (!statusDistributionData) return [];
+    return Object.entries(statusDistributionData).map(
+      ([key, value]) => ({
+        label: key
+          .replace(/([A-Z])/g, " $1")
+          .replace(/^./, (c) => c.toUpperCase()),
+        value,
+      })
+    );
+  }, [statusDistributionData]);
 
   if (isLoading) return <OrderStatusSkeleton />;
   if (error) {
@@ -39,15 +52,6 @@ const DashboardStatus = () => {
     );
   }
   if (!statusDistributionData) return null;
-
-  const statsArray = Object.entries(statusDistributionData).map(
-    ([key, value]) => ({
-      label: key
-        .replace(/([A-Z])/g, " $1")
-        .replace(/^./, (c) => c.toUpperCase()),
-      value,
-    })
-  );
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-full">

@@ -20,7 +20,6 @@ const ModalDelete = ({
   title,
 }: ModalDeleteProps) => {
   const queryClient = useQueryClient();
-  const [isPending, startTransition] = useTransition();
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -44,6 +43,11 @@ const ModalDelete = ({
         queryClient.invalidateQueries({ queryKey: ["order-stats-data"] });
         queryClient.invalidateQueries({ queryKey: ["order-board-data"] });
         queryClient.invalidateQueries({ queryKey: ["orders-data"] });
+        queryClient.invalidateQueries({ queryKey: ["report-stats"] });
+        queryClient.invalidateQueries({ queryKey: ["report-revenue-trend"] });
+        queryClient.invalidateQueries({ queryKey: ["report-most-services"] });
+        queryClient.invalidateQueries({ queryKey: ["customer-stats"] });
+        queryClient.invalidateQueries({ queryKey: ["service-stats"] });
       }
     },
     onError: () => {
@@ -54,7 +58,7 @@ const ModalDelete = ({
   const handleDeleteService = (e: any) => {
     e.preventDefault();
 
-    startTransition(async () => mutation.mutate());
+    mutation.mutate();
   };
 
   return (
@@ -85,19 +89,19 @@ const ModalDelete = ({
         </div>
 
         {/* Footer INSIDE children */}
-        <div className="flex gap-3 pt-4 border-t border-gray-200">
+        <div className="flex justify-between items-center pt-4 border-t border-gray-200">
           <button
-            disabled={isPending}
+            disabled={mutation.isPending}
             onClick={isCloseModal}
-            className="flex-1 px-4 py-2.5 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition border border-gray-300">
+            className="px-6 py-2.5 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition border border-gray-300">
             Cancel
           </button>
 
           <button
-            disabled={isPending}
+            disabled={mutation.isPending}
             onClick={handleDeleteService}
-            className="flex-1 flex items-center justify-center px-4 py-2.5 text-white bg-red-600 rounded-lg hover:bg-red-700 transition shadow-sm">
-            {isPending && <Loader className="animate-spin h-5 w-5 mr-2" />}
+            className="px-6 py-2.5 text-white bg-red-600 rounded-lg hover:bg-red-700 transition shadow-sm flex items-center justify-center">
+            {mutation.isPending && <Loader className="animate-spin h-4 w-4 mr-2" />}
             Delete {title}
           </button>
         </div>

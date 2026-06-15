@@ -8,7 +8,7 @@ import DashboardStatus from "../components/Dashboard/DashboardStatus";
 const LaundryDashboard = () => {
   return (
     <div className="flex-1 flex flex-col md:ml-0">
-      <main className="flex-1 p-4 md:p-6 mt-16 md:mt-0">
+      <main className="flex-1 p-4 md:p-6">
         {/* Header */}
         <div className="mb-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between">

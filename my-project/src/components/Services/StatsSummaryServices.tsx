@@ -1,3 +1,4 @@
+import React, { useMemo } from "react";
 import {
   CheckCircle,
   PhilippinePeso,
@@ -6,68 +7,65 @@ import {
   ShoppingBag,
   TrendingUp,
 } from "lucide-react";
+import SummaryStatCard from "../UI/SummaryStatCard";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "../../lib/axios";
+import CardsSkeleton from "../SkeletonLoading/CardsSkeleton";
 
 const StatsSummaryServices = () => {
+  const { data: stats, isLoading, error } = useQuery({
+    queryKey: ["service-stats"],
+    queryFn: async () => {
+      const res = await api.get("/service-stats");
+      return res.data;
+    },
+    staleTime: 30 * 60 * 1000,
+  });
+
+  const statsData = useMemo(() => {
+    if (!stats) return [];
+    return [
+      {
+        title: "Total Services",
+        value: stats.totalServices,
+        icon: <PackageOpen className="h-6 w-6" />,
+        color: "bg-blue-500",
+      },
+      {
+        title: "Active Services",
+        value: stats.activeServices,
+        icon: <CheckCircle className="h-6 w-6" />,
+        color: "bg-purple-500",
+      },
+      {
+        title: "Service Categories",
+        value: stats.totalCategories,
+        icon: <Layers className="h-6 w-6" />,
+        color: "bg-orange-500",
+      },
+      {
+        title: "Total Orders",
+        value: stats.totalOrders,
+        icon: <ShoppingBag className="h-6 w-6" />,
+        color: "bg-green-500",
+      },
+    ];
+  }, [stats]);
+
+  if (isLoading) return <CardsSkeleton />;
+  if (error || !stats) return null;
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-      <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-gray-500">Total Services</p>
-            <p className="text-2xl font-bold text-gray-800">8</p>
-            <p className="text-xs text-green-600 mt-1 flex items-center">
-              <CheckCircle className="h-3 w-3 mr-1" />7 Active
-            </p>
-          </div>
-          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-            <PackageOpen className="h-6 w-6 text-blue-600" />
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-gray-500">Average Price</p>
-            <p className="text-2xl font-bold text-gray-800">₱12.50</p>
-            <p className="text-xs text-purple-600 mt-1 flex items-center">
-              ₱ per service
-            </p>
-          </div>
-          <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-            <PhilippinePeso className="h-6 w-6 text-purple-600" />
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-gray-500">Service Categories</p>
-            <p className="text-2xl font-bold text-gray-800">5</p>
-            <p className="text-xs text-orange-600 mt-1">Types available</p>
-          </div>
-          <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-            <Layers className="h-6 w-6 text-orange-600" />
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-gray-500">Total Orders</p>
-            <p className="text-2xl font-bold text-gray-800">674</p>
-            <p className="text-xs text-green-600 mt-1 flex items-center">
-              <TrendingUp className="h-3 w-3 mr-1" />
-              +12% this month
-            </p>
-          </div>
-          <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-            <ShoppingBag className="h-6 w-6 text-green-600" />
-          </div>
-        </div>
-      </div>
+      {statsData.map((stat) => (
+        <SummaryStatCard
+          key={stat.title}
+          title={stat.title}
+          value={stat.value}
+          icon={stat.icon}
+          color={stat.color}
+        />
+      ))}
     </div>
   );
 };

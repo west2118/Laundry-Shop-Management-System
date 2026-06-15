@@ -6,6 +6,8 @@ export type UserType = {
   email: string;
   firstName: string;
   lastName: string;
+  role: "admin" | "staff";
+  status: "active" | "inactive";
   createdAt: string;
   updatedAt: string;
   __v: number;
@@ -55,11 +57,19 @@ export type CustomerInfo = {
   email: string;
 };
 
+export type CreatorInfo = {
+  _id?: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+};
+
 export type OrderStatus = "pending" | "in-process" | "ready" | "picked-up";
 
 export type OrderType = {
   _id: string;
   customer: CustomerInfo;
+  createdBy?: CreatorInfo;
   items: OrderItem[];
   itemDescription: string;
   specialInstructions: string;
@@ -84,7 +94,6 @@ export type ServiceCategory =
   | "basic"
   | "premium"
   | "express"
-  | "discount"
   | "additional";
 
 export type ServiceStatus = "active" | "inactive" | "comingSoon";

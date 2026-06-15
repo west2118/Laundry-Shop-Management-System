@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Home,
   Package,
@@ -19,6 +20,7 @@ import { api, removeAccessToken } from "../lib/axios";
 import { toast } from "react-toastify";
 
 const Sidebar = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate()
   const { user, clearUser } = useUserStore();
 
@@ -40,19 +42,33 @@ const Sidebar = () => {
   ${isActive ? "bg-blue-600 text-white" : "text-gray-700 hover:bg-gray-100"}`;
 
   const navItems = [
-    { label: "Dashboard", icon: Home, to: "/admin", end: true },
-    { label: "Boards", icon: Package2, to: "orders-board" },
-    { label: "Orders", icon: Package, to: "orders" },
-    { label: "Customers", icon: Users, to: "customers" },
-    { label: "Services", icon: Workflow, to: "services" },
-    { label: "Reports", icon: BarChart3, to: "reports" },
+    { label: "Dashboard", icon: Home, to: `/${user?.role || "admin"}`, end: true, adminOnly: true },
+    { label: "Boards", icon: Package2, to: "orders-board", adminOnly: false },
+    { label: "Orders", icon: Package, to: "orders", adminOnly: true },
+    { label: "Customers", icon: Users, to: "customers", adminOnly: true },
+    { label: "Services", icon: Workflow, to: "services", adminOnly: true },
+    { label: "Users", icon: User, to: "users", adminOnly: true },
+    { label: "Reports", icon: BarChart3, to: "reports", adminOnly: true },
   ];
 
   const fullName = user ? `${user.firstName} ${user.lastName}` : "Loading...";
 
   return (
     <>
-      <div className="hidden md:flex flex-col w-64 bg-white border-r border-gray-200">
+      {/* Backdrop for mobile */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Sidebar container */}
+      <div 
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${
+          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
         <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200">
           <div className="flex items-center space-x-2">
             <Activity className="h-6 w-6 text-blue-600" />
@@ -61,16 +77,33 @@ const Sidebar = () => {
         </div>
         <div className="flex-1 overflow-y-auto py-4">
           <nav className="px-4 space-y-1">
-            {navItems.map(({ label, icon: Icon, to, end }) => (
-              <NavLink
-                key={label}
-                to={to}
-                end={end}
-                className={({ isActive }) => navClass(isActive)}>
-                <Icon className="mr-3 h-5 w-5" />
-                <span className="font-medium">{label}</span>
-              </NavLink>
-            ))}
+            {!user ? (
+              Array.from({ length: 5 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="flex items-center px-4 py-3 rounded-lg bg-gray-100 animate-pulse"
+                >
+                  <div className="w-5 h-5 bg-gray-50 rounded mr-3"></div>
+                  <div className="h-4 bg-gray-50 rounded w-24"></div>
+                </div>
+              ))
+            ) : (
+              navItems.map(({ label, icon: Icon, to, end, adminOnly }) => {
+                if (adminOnly && user?.role !== "admin") return null;
+
+                return (
+                  <NavLink
+                    key={label}
+                    to={to}
+                    end={end}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={({ isActive }) => navClass(isActive)}>
+                    <Icon className="mr-3 h-5 w-5" />
+                    <span className="font-medium">{label}</span>
+                  </NavLink>
+                );
+              })
+            )}
           </nav>
         </div>
         <div className="border-t border-gray-200 p-4">
@@ -117,7 +150,9 @@ const Sidebar = () => {
             <Activity className="h-6 w-6 text-blue-600" />
             <h1 className="text-xl font-bold text-blue-700">LaundryPro</h1>
           </div>
-          <button className="p-2 rounded-md text-gray-700">
+          <button 
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="p-2 rounded-md text-gray-700">
             <Menu className="h-6 w-6" />
           </button>
         </div>

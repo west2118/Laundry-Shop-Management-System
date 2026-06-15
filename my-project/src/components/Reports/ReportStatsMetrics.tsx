@@ -5,11 +5,12 @@ import {
 } from "lucide-react";
 import React from "react";
 import { pesoFormatter } from "../../lib/utils";
-import ReportStatCard from "./ReportStatCard";
+import SummaryStatCard from "../UI/SummaryStatCard";
 import ReportStatsSkeleton from "../SkeletonLoading/ReportStatsSkeleton";
 
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../lib/axios";
+import CardsSkeleton from "../SkeletonLoading/CardsSkeleton";
 
 type ReportStatsMetricsProps = {
   startDate: string;
@@ -25,7 +26,7 @@ const ReportStatsMetrics = ({ startDate, endDate }: ReportStatsMetricsProps) => 
     },
   });
 
-  if (isLoading || !reportStats) return <ReportStatsSkeleton />;
+  if (isLoading) return <CardsSkeleton />;
   if (error) return <div className="text-red-500">Failed to load stats.</div>;
 
   const reportStatsChart = [
@@ -35,8 +36,7 @@ const ReportStatsMetrics = ({ startDate, endDate }: ReportStatsMetricsProps) => 
       value: pesoFormatter.format(reportStats.totalRevenue),
       subtitle: "Selected Range",
       icon: <PhilippinePeso className="h-5 w-5" />,
-      bgColor: "bg-purple-100",
-      textColor: "text-purple-600",
+      color: "bg-purple-500",
     },
     {
       id: "total-orders",
@@ -44,8 +44,7 @@ const ReportStatsMetrics = ({ startDate, endDate }: ReportStatsMetricsProps) => 
       value: reportStats.totalOrders.toLocaleString(),
       subtitle: "Selected Range",
       icon: <ShoppingBag className="h-5 w-5" />,
-      bgColor: "bg-blue-100",
-      textColor: "text-blue-600",
+      color: "bg-blue-500",
     },
     {
       id: "aov",
@@ -53,8 +52,7 @@ const ReportStatsMetrics = ({ startDate, endDate }: ReportStatsMetricsProps) => 
       value: pesoFormatter.format(reportStats.aovData),
       subtitle: "Selected Range",
       icon: <PhilippinePeso className="h-5 w-5" />,
-      bgColor: "bg-green-100",
-      textColor: "text-green-600",
+      color: "bg-green-500",
     },
     {
       id: "total-customers",
@@ -62,15 +60,20 @@ const ReportStatsMetrics = ({ startDate, endDate }: ReportStatsMetricsProps) => 
       value: reportStats.totalCustomers.toLocaleString(),
       subtitle: "Selected Range",
       icon: <Users className="h-5 w-5" />,
-      bgColor: "bg-orange-100",
-      textColor: "text-orange-600",
+      color: "bg-orange-500",
     },
   ];
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
       {reportStatsChart.map((stat) => (
-        <ReportStatCard key={stat.id} stat={stat} />
+        <SummaryStatCard
+          key={stat.id}
+          title={stat.title}
+          value={stat.value}
+          icon={stat.icon}
+          color={stat.color}
+        />
       ))}
     </div>
   );

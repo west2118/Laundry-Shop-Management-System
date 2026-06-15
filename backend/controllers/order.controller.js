@@ -51,6 +51,7 @@ export const postOrder = async (req, res) => {
       discount,
       totalAmount,
       paymentStatus,
+      createdBy: userId,
     });
 
     res
@@ -107,6 +108,7 @@ export const getAllOrders = async (req, res) => {
       .skip(skip)
       .limit(limit)
       .populate("customer", "fullName email")
+      .populate("createdBy", "firstName lastName email")
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -146,6 +148,7 @@ export const getAllOrdersBoard = async (req, res) => {
       ],
     })
       .populate("customer", "fullName email")
+      .populate("createdBy", "firstName lastName email")
       .sort({ createdAt: -1 });
 
     res.status(200).json(orders);
@@ -159,7 +162,7 @@ export const putOrder = async (req, res) => {
   try {
     const { id: userId } = req.user;
     const { id } = req.params;
-    const { payload } = req.body;
+    const payload = req.body;
 
     const user = await User.findById(userId);
     if (!user) {
@@ -294,6 +297,7 @@ export const getRecentOrders = async (req, res) => {
   try {
     const orders = await Order.find({})
       .populate("customer", "fullName")
+      .populate("createdBy", "firstName lastName")
       .limit(5)
       .sort({ createdAt: -1 });
 

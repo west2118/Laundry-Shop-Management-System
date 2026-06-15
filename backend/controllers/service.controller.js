@@ -1,7 +1,27 @@
 import Service from "../models/service.model.js";
 import User from "../models/user.model.js";
+import Order from "../models/order.model.js";
 import { getWeekRange } from "../utils/date.utils.js";
 import { parseAndBuildQuery } from "../utils/query.utils.js";
+
+export const getServiceStats = async (req, res) => {
+  try {
+    const totalServices = await Service.countDocuments();
+    const activeServices = await Service.countDocuments({ status: "active" });
+    const distinctCategories = await Service.distinct("category");
+    const totalCategories = distinctCategories.length;
+    const totalOrders = await Order.countDocuments();
+
+    res.status(200).json({
+      totalServices,
+      activeServices,
+      totalCategories,
+      totalOrders
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
 
 export const postService = async (req, res) => {
   try {
@@ -94,7 +114,7 @@ export const getServices = async (req, res) => {
       return res.status(400).json({ message: "User didn't exist" });
     }
 
-    const services = await Service.find({});
+    const services = await Service.find({ status: "active" });
 
     res.status(200).json(services);
   } catch (error) {

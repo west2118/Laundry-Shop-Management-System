@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Search } from "lucide-react";
 import type { OrderType } from "../../lib/types";
@@ -34,31 +34,32 @@ const OrderTable = ({ handleSelectOrder }: OrderTableProps) => {
 
   const debouncedSearch = useDebounceInput(search);
 
-  const setPage = (value: React.SetStateAction<number>) => {
+  const setPage = useCallback((value: React.SetStateAction<number>) => {
     setSearchParams((prev) => {
-      const next = typeof value === "function" ? value(page) : value;
+      const currentPage = parseInt(prev.get("page") || "1", 10);
+      const next = typeof value === "function" ? value(currentPage) : value;
       prev.set("page", next.toString());
       return prev;
     }, { replace: true });
-  };
+  }, [setSearchParams]);
 
-  const setStatus = (newStatus: string) => {
+  const setStatus = useCallback((newStatus: string) => {
     setSearchParams((prev) => {
       if (newStatus === "All") prev.delete("status");
       else prev.set("status", newStatus);
       prev.set("page", "1");
       return prev;
     }, { replace: true });
-  };
+  }, [setSearchParams]);
 
-  const setSearch = (newSearch: string) => {
+  const setSearch = useCallback((newSearch: string) => {
     setSearchParams((prev) => {
       if (!newSearch) prev.delete("search");
       else prev.set("search", newSearch);
       prev.set("page", "1");
       return prev;
     }, { replace: true });
-  };
+  }, [setSearchParams]);
 
   const { data: ordersData, isLoading: isOrdersLoading } = useQuery<DataType>({
     queryKey: ["orders-data", page, limit, debouncedSearch, status],
@@ -69,8 +70,10 @@ const OrderTable = ({ handleSelectOrder }: OrderTableProps) => {
     placeholderData: keepPreviousData,
   });
 
+  console.log("ordersData", ordersData);
+
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mt-6">
       <div className="px-6 py-4 border-b border-gray-200">
         <div className="flex flex-col md:flex-row md:items-center justify-between">
           <div>
@@ -122,6 +125,9 @@ const OrderTable = ({ handleSelectOrder }: OrderTableProps) => {
                 Service
               </th>
               <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Created By
+              </th>
+              <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Amount
               </th>
               <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -148,7 +154,7 @@ const OrderTable = ({ handleSelectOrder }: OrderTableProps) => {
             {/* Loaded but empty */}
             {!isOrdersLoading && ordersData?.orders.length === 0 && (
               <tr>
-                <td colSpan={7} className="text-center py-6 text-gray-500">
+                <td colSpan={8} className="text-center py-6 text-gray-500">
                   No orders found
                 </td>
               </tr>
@@ -159,7 +165,7 @@ const OrderTable = ({ handleSelectOrder }: OrderTableProps) => {
           {ordersData && ordersData?.totalPages >= 1 && (
             <tfoot>
               <tr>
-                <td colSpan={7} className="px-6 py-4">
+                <td colSpan={8} className="px-6 py-4 border-t border-gray-200">
                   <Pagination
                     limit={limit}
                     page={page}

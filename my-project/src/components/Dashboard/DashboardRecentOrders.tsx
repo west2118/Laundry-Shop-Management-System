@@ -18,6 +18,7 @@ const DashboardRecentOrders = () => {
       const res = await api.get("/order-recent");
       return res.data as OrderType[];
     },
+    staleTime: 60_000,
   });
 
   if (isLoading) return <RecentOrdersSkeleton />;

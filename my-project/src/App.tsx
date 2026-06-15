@@ -17,20 +17,29 @@ import LoginPage from "./pages/Login";
 import { useSyncInfo } from "./hooks/useSyncInfo";
 import OrdersBoardPage from "./pages/OrdersBoard";
 import ProtectedRoute from "./components/ProtectedRoute";
+import UsersPage from "./pages/Users";
+import RoleRoute from "./components/RoleRoute";
+import RoleParamRoute from "./components/RoleParamRoute";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <>
       <Route element={<ProtectedRoute />}>
-        <Route path="/admin" element={<Layout />}>
-          <Route index element={<LaundryDashboard />} />
-          <Route path="customers" element={<Customers />} />
-          <Route path="orders" element={<OrdersPage />} />
-          <Route path="services" element={<ServicesPage />} />
-          <Route path="reports" element={<ReportsPage />} />
+        <Route element={<RoleParamRoute />}>
+          <Route path="/:role" element={<Layout />}>
           <Route path="orders-board" element={<OrdersBoardPage />} />
+          
+          <Route element={<RoleRoute allowedRoles={["admin"]} />}>
+            <Route index element={<LaundryDashboard />} />
+            <Route path="customers" element={<Customers />} />
+            <Route path="orders" element={<OrdersPage />} />
+            <Route path="services" element={<ServicesPage />} />
+            <Route path="reports" element={<ReportsPage />} />
+            <Route path="users" element={<UsersPage />} />
+          </Route>
         </Route>
       </Route>
+    </Route>
 
       <Route path="/">
         <Route index element={<Navigate to="/login" replace />} />

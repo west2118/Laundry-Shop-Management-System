@@ -3,12 +3,27 @@ import cors from "cors";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+
 dotenv.config({ path: ".env" });
 
 const app = express();
 app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
+
+// Security Middlewares
+app.use(helmet());
+
+// Global Rate Limiter
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 1000,
+  message: { message: "Too many requests, please try again later." },
+});
+
+app.use("/api", globalLimiter);
 
 import userRoutes from "./routes/user.route.js";
 import serviceRoutes from "./routes/service.route.js";

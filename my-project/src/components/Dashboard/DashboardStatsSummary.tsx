@@ -1,8 +1,9 @@
 import { CheckCircle, Clock, ShoppingBag, Truck, AlertCircle } from "lucide-react";
-import React from "react";
+import React, { useMemo } from "react";
 import CardsSkeleton from "../SkeletonLoading/CardsSkeleton";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../lib/axios";
+import SummaryStatCard from "../UI/SummaryStatCard";
 
 const DashboardStatsSummary = () => {
   const { data: ordersStats, isLoading, error } = useQuery({
@@ -11,7 +12,38 @@ const DashboardStatsSummary = () => {
       const res = await api.get("/order-stats-weekly");
       return res.data;
     },
+    staleTime: 60_000,
   });
+
+  const summaryData = useMemo(() => {
+    if (!ordersStats) return [];
+    return [
+      {
+        title: "Total Orders",
+        value: ordersStats.totalOrders,
+        color: "bg-blue-500",
+        icon: <ShoppingBag className="h-6 w-6" />,
+      },
+      {
+        title: "Pending",
+        value: ordersStats.pending,
+        color: "bg-yellow-500",
+        icon: <Clock className="h-6 w-6" />,
+      },
+      {
+        title: "Ready",
+        value: ordersStats.ready,
+        color: "bg-green-500",
+        icon: <CheckCircle className="h-6 w-6" />,
+      },
+      {
+        title: "Picked Up",
+        value: ordersStats.pickedUp,
+        color: "bg-purple-500",
+        icon: <Truck className="h-6 w-6" />,
+      },
+    ];
+  }, [ordersStats]);
 
   if (isLoading) return <CardsSkeleton />;
   if (error) {
@@ -24,50 +56,16 @@ const DashboardStatsSummary = () => {
   }
   if (!ordersStats) return null;
 
-  const summaryData = [
-    {
-      title: "Total Orders",
-      value: ordersStats.totalOrders,
-      color: "bg-blue-500",
-      icon: <ShoppingBag className="h-6 w-6" />,
-    },
-    {
-      title: "Pending",
-      value: ordersStats.pending,
-      color: "bg-yellow-500",
-      icon: <Clock className="h-6 w-6" />,
-    },
-    {
-      title: "Ready",
-      value: ordersStats.ready,
-      color: "bg-green-500",
-      icon: <CheckCircle className="h-6 w-6" />,
-    },
-    {
-      title: "Picked Up",
-      value: ordersStats.pickedUp,
-      color: "bg-purple-500",
-      icon: <Truck className="h-6 w-6" />,
-    },
-  ];
-
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       {summaryData?.map((stat) => (
-        <div
+        <SummaryStatCard
           key={stat.title}
-          className="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">{stat.title}</p>
-              <p className="text-2xl font-bold text-gray-800">{stat.value}</p>
-            </div>
-            <div
-              className={`${stat.color} w-12 h-12 rounded-lg flex items-center justify-center`}>
-              <div className="text-white">{stat.icon}</div>
-            </div>
-          </div>
-        </div>
+          title={stat.title}
+          value={stat.value}
+          icon={stat.icon}
+          color={stat.color}
+        />
       ))}
     </div>
   );

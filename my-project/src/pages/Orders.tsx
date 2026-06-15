@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Package, Plus } from "lucide-react";
 import OrderModalForm from "../components/Orders/OrderModalForm";
 import OrderModalDetails from "../components/Orders/OrderModalDetails";
@@ -14,7 +14,7 @@ const OrdersPage = () => {
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const handleSelectOrder = (
+  const handleSelectOrder = useCallback((
     order: OrderType,
     action: "edit" | "delete" | "details"
   ) => {
@@ -28,38 +28,38 @@ const OrdersPage = () => {
     } else {
       setIsDeleteModalOpen(true);
     }
-  };
+  }, []);
 
-  const closeOrderFormModal = () => {
+  const closeOrderFormModal = useCallback(() => {
     setIsOrderFormModalOpen(false);
     setIsEdit(false);
     setSelectedOrder(null);
-  };
+  }, []);
 
-  const closeOrderDetailsModal = () => {
+  const closeOrderDetailsModal = useCallback(() => {
     setIsOrderDetailsModalOpen(false);
     setSelectedOrder(null);
-  };
+  }, []);
 
-  const closeDeleteModal = () => {
+  const closeDeleteModal = useCallback(() => {
     setIsDeleteModalOpen(false);
     setSelectedOrder(null);
-  };
+  }, []);
 
   return (
     <div className="min-h-screen p-4 md:p-6">
       {/* Page Header */}
-      <div className="mb-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center">
-              <Package className="mr-2 h-7 w-7 text-blue-600" />
-              Orders
-            </h1>
-            <p className="text-gray-600 mt-1">
-              Manage laundry orders, track status, and process deliveries
-            </p>
-          </div>
+      <div className="flex flex-col md:flex-row md:items-center justify-between">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center">
+            <Package className="mr-2 h-7 w-7 text-blue-600" />
+            Orders
+          </h1>
+          <p className="text-gray-600 mt-1">
+            Manage laundry orders, track status, and process deliveries
+          </p>
+        </div>
+        <div className="mt-4 md:mt-0 flex">
           <button
             onClick={() => setIsOrderFormModalOpen(true)}
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition flex items-center">
@@ -67,9 +67,9 @@ const OrdersPage = () => {
             New Order
           </button>
         </div>
-
-        <OrderStatsSummary />
       </div>
+
+      <OrderStatsSummary />
 
       <OrderTable handleSelectOrder={handleSelectOrder} />
 

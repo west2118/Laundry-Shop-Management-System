@@ -1,6 +1,31 @@
 import Customer from "../models/customer.model.js";
 import User from "../models/user.model.js";
+import Order from "../models/order.model.js";
 import { parseAndBuildQuery } from "../utils/query.utils.js";
+
+export const getCustomerStats = async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    const totalCustomers = await Customer.countDocuments();
+    const newCustomersToday = await Customer.countDocuments({ createdAt: { $gte: today } });
+    const newCustomersThisMonth = await Customer.countDocuments({ createdAt: { $gte: firstDayOfMonth } });
+    const totalOrders = await Order.countDocuments();
+
+    res.status(200).json({
+      totalCustomers,
+      newCustomersToday,
+      newCustomersThisMonth,
+      totalOrders
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
 
 export const postCustomer = async (req, res) => {
   try {

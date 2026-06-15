@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import {
   Package,
   Clock,
@@ -41,22 +41,22 @@ const OrderBoard = ({
   });
 
   // Drag event handlers
-  const handleDragStart = (e: any, order: OrderType) => {
+  const handleDragStart = useCallback((e: any, order: OrderType) => {
     setDraggedOrder(order);
     e.dataTransfer.setData("text/plain", order._id);
     e.dataTransfer.effectAllowed = "move";
-  };
+  }, []);
 
-  const handleDragOver = (e: any, columnId: OrderStatus) => {
+  const handleDragOver = useCallback((e: any, columnId: OrderStatus) => {
     e.preventDefault();
 
     setDragOverColumn(columnId);
     e.dataTransfer.dropEffect = "move";
-  };
+  }, []);
 
-  const handleDragLeave = () => {
+  const handleDragLeave = useCallback(() => {
     setDragOverColumn(null);
-  };
+  }, []);
 
   const updateOrderStatus = useMutation({
     mutationFn: async ({
@@ -103,10 +103,15 @@ const OrderBoard = ({
       queryClient.invalidateQueries({ queryKey: ["order-stats-data"] });
       queryClient.invalidateQueries({ queryKey: ["order-board-data"] });
       queryClient.invalidateQueries({ queryKey: ["orders-data"] });
+      queryClient.invalidateQueries({ queryKey: ["report-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["report-revenue-trend"] });
+      queryClient.invalidateQueries({ queryKey: ["report-most-services"] });
+      queryClient.invalidateQueries({ queryKey: ["customer-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["service-stats"] });
     },
   });
 
-  const handleDrop = async (e: any, columnId: OrderStatus) => {
+  const handleDrop = useCallback(async (e: any, columnId: OrderStatus) => {
     e.preventDefault();
 
     if (!draggedOrder || draggedOrder.orderStatus === columnId) return;
@@ -118,15 +123,15 @@ const OrderBoard = ({
 
     setDraggedOrder(null);
     setDragOverColumn(null);
-  };
-
-  if (isLoading || !orders) return <OrderBoardSkeleton />;
+  }, [draggedOrder, updateOrderStatus]);
 
   // Create a local copy of columns with calculated counts
-  const columnsWithCounts = columns.map(col => ({
+  const columnsWithCounts = useMemo(() => columns.map(col => ({
     ...col,
-    count: orders.filter((order: OrderType) => order.orderStatus === col.id).length
-  }));
+    count: orders ? orders.filter((order: OrderType) => order.orderStatus === col.id).length : 0
+  })), [columns, orders]);
+
+  if (isLoading || !orders) return <OrderBoardSkeleton />;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

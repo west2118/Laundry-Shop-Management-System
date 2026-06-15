@@ -23,6 +23,7 @@ const DashboardServiceTypesChart = () => {
       const res = await api.get("/order-service-weekly");
       return res.data;
     },
+    staleTime: 60_000,
   });
 
   if (isLoading) return <ServiceSkeleton />;
@@ -46,33 +47,40 @@ const DashboardServiceTypesChart = () => {
         <PieChartIcon className="h-5 w-5 text-purple-500" />
       </div>
       <div className="h-72">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={serviceTypeData}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={({ name, percent }) =>
-                `${name}: ${(percent! * 100).toFixed(0)}%`
-              }
-              outerRadius={80}
-              fill="#8884d8"
-              dataKey="total">
-              {serviceTypeData?.map((entry: any, index: number) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={
-                    serviceColor.find((s) => s.name === entry.name)?.color ??
-                    "#CBD5E1"
-                  }
-                />
-              ))}
-            </Pie>
-            <Tooltip formatter={(value) => [`${value} orders`, "Count"]} />
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
+        {serviceTypeData && serviceTypeData.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-gray-500">
+            <PieChartIcon className="h-12 w-12 text-gray-300 mb-2" />
+            <p>No service data available yet.</p>
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={serviceTypeData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ name, percent }) =>
+                  `${name}: ${(percent! * 100).toFixed(0)}%`
+                }
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="total">
+                {serviceTypeData?.map((entry: any, index: number) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={
+                      serviceColor.find((s) => s.name === entry.name)?.color ??
+                      "#CBD5E1"
+                    }
+                  />
+                ))}
+              </Pie>
+              <Tooltip formatter={(value) => [`${value} orders`, "Count"]} />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        )}
       </div>
     </div>
   );

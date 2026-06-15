@@ -1,5 +1,5 @@
 import { Search } from "lucide-react";
-import React from "react";
+import React, { useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import type { CustomerType } from "../../lib/types";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
@@ -33,22 +33,23 @@ const CustomersTable = ({ handleSelectCustomer }: CustomersTableProps) => {
 
   const debouncedSearch = useDebounceInput(search);
 
-  const setPage = (value: React.SetStateAction<number>) => {
+  const setPage = useCallback((value: React.SetStateAction<number>) => {
     setSearchParams((prev) => {
-      const next = typeof value === "function" ? value(page) : value;
+      const currentPage = parseInt(prev.get("page") || "1", 10);
+      const next = typeof value === "function" ? value(currentPage) : value;
       prev.set("page", next.toString());
       return prev;
     }, { replace: true });
-  };
+  }, [setSearchParams]);
 
-  const setSearch = (newSearch: string) => {
+  const setSearch = useCallback((newSearch: string) => {
     setSearchParams((prev) => {
       if (!newSearch) prev.delete("search");
       else prev.set("search", newSearch);
       prev.set("page", "1");
       return prev;
     }, { replace: true });
-  };
+  }, [setSearchParams]);
 
   const { data, isLoading } = useQuery<DataType>({
     queryKey: ["customer-data", page, limit, debouncedSearch],
@@ -62,7 +63,7 @@ const CustomersTable = ({ handleSelectCustomer }: CustomersTableProps) => {
   console.log(data?.customers);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mt-6">
       <div className="px-6 py-4 border-b border-gray-200">
         <div className="flex flex-col md:flex-row md:items-center justify-between">
           <div>
@@ -132,7 +133,7 @@ const CustomersTable = ({ handleSelectCustomer }: CustomersTableProps) => {
           {data && data?.totalPages >= 1 && (
             <tfoot>
               <tr>
-                <td colSpan={5} className="px-6 py-4">
+                <td colSpan={5} className="px-6 py-4 border-t border-gray-200">
                   <Pagination
                     limit={limit}
                     page={page}

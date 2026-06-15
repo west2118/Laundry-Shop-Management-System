@@ -1,4 +1,4 @@
-import { FileText, Mail, MapPin, Phone, User, UserPlus } from "lucide-react";
+import { FileText, Mail, MapPin, Phone, User, UserPlus, Loader } from "lucide-react";
 import Modal from "../UI/Modal";
 import { useEffect, useTransition } from "react";
 import { useForm } from "../../hooks/useForm";
@@ -27,7 +27,6 @@ const CustomerModalForm = ({
   selectedCustomer,
 }: CustomerModalFormProps) => {
   const queryClient = useQueryClient();
-  const [isPending, startTransition] = useTransition();
   const { formData, handleChange, setField } = useForm<FormData>({
     fullName: "",
     email: "",
@@ -75,7 +74,7 @@ const CustomerModalForm = ({
   const handleSubmit = (e: any) => {
     e.preventDefault();
 
-    startTransition(async () => mutation.mutate(formData));
+    mutation.mutate(formData);
   };
 
   return (
@@ -130,21 +129,25 @@ const CustomerModalForm = ({
             />
           </div>
 
-          <div className="flex flex-col space-y-3 pt-2">
+          <div className="flex justify-between items-center pt-4 border-t border-gray-200">
             <button
-              disabled={isPending}
-              type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition flex items-center justify-center">
-              <UserPlus className="mr-2 h-4 w-4" />
-              {isEdit ? "Edit Customer" : "Add Customer"}
+              disabled={mutation.isPending}
+              onClick={isCloseModal}
+              type="button"
+              className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition">
+              Cancel
             </button>
 
             <button
-              disabled={isPending}
-              onClick={isCloseModal}
-              type="button"
-              className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-3 px-4 rounded-lg transition">
-              Cancel
+              disabled={mutation.isPending}
+              type="submit"
+              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition flex items-center justify-center">
+              {mutation.isPending ? (
+                <Loader className="animate-spin h-4 w-4 mr-2" />
+              ) : (
+                <UserPlus className="mr-2 h-4 w-4" />
+              )}
+              {isEdit ? "Edit Customer" : "Add Customer"}
             </button>
           </div>
         </div>

@@ -65,7 +65,6 @@ const OrderModalForm = ({
   selectedOrder,
 }: OrderModalFormProps) => {
   const queryClient = useQueryClient();
-  const [isPending, startTransition] = useTransition();
   const { formData, handleChange, setField } = useForm<FormData>({
     customer: "",
     itemDescription: "",
@@ -237,7 +236,7 @@ const OrderModalForm = ({
 
         res = await api.put(
           `/order/${selectedOrder?._id}`,
-          { payload }
+          payload
         );
       } else {
         res = await api.post("/order", payload);
@@ -252,6 +251,11 @@ const OrderModalForm = ({
       queryClient.invalidateQueries({ queryKey: ["order-board-data"] });
       queryClient.invalidateQueries({ queryKey: ["orders-data"] });
       queryClient.invalidateQueries({ queryKey: ["order-today"] });
+      queryClient.invalidateQueries({ queryKey: ["report-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["report-revenue-trend"] });
+      queryClient.invalidateQueries({ queryKey: ["report-most-services"] });
+      queryClient.invalidateQueries({ queryKey: ["customer-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["service-stats"] });
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.error || error.response?.data?.message || error.message || "Something went wrong");
@@ -268,7 +272,12 @@ const OrderModalForm = ({
       isModalOpen={isModalOpen}
       isCloseModal={isCloseModal}
       title={isEdit ? "Edit Order" : "Add Order"}
-      width="max-w-[40%]">
+      width="w-full max-w-lg md:max-w-xl lg:max-w-[40%]">
+      {isLoadingCustomers || isLoadingServices ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      ) : (
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
           <div>
@@ -443,25 +452,26 @@ const OrderModalForm = ({
             />
           </div>
 
-          <div className="flex flex-col space-y-3 pt-2">
+          <div className="flex justify-between items-center pt-4 border-t border-gray-200">
             <button
-              disabled={isPending}
-              type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition flex items-center justify-center">
-              {isPending && <Loader className="animate-spin h-5 w-5 mr-2" />}
-              {isEdit ? "Edit Order" : "Add Order"}
+              disabled={mutation.isPending}
+              onClick={isCloseModal}
+              type="button"
+              className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition">
+              Cancel
             </button>
 
             <button
-              disabled={isPending}
-              onClick={isCloseModal}
-              type="button"
-              className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-3 px-4 rounded-lg transition">
-              Cancel
+              disabled={mutation.isPending}
+              type="submit"
+              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition flex items-center justify-center">
+              {mutation.isPending && <Loader className="animate-spin h-4 w-4 mr-2" />}
+              {isEdit ? "Edit Order" : "Add Order"}
             </button>
           </div>
         </div>
       </form>
+      )}
     </Modal>
   );
 };

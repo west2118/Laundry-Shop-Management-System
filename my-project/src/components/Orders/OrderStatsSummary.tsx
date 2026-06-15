@@ -1,7 +1,9 @@
+import React, { useMemo } from "react";
 import { Package, PhilippinePeso, PackageOpen, Users, AlertCircle } from "lucide-react";
 import CardsSkeleton from "../SkeletonLoading/CardsSkeleton";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../lib/axios";
+import SummaryStatCard from "../UI/SummaryStatCard";
 
 const OrderStatsSummary = () => {
   const { data: orderStats, isLoading, error } = useQuery({
@@ -11,6 +13,36 @@ const OrderStatsSummary = () => {
       return res.data;
     },
   });
+
+  const summaryData = useMemo(() => {
+    if (!orderStats) return [];
+    return [
+      {
+        title: "Total Orders",
+        value: orderStats.totalOrders,
+        icon: <Package className="h-6 w-6" />,
+        color: "bg-blue-500",
+      },
+      {
+        title: "Today's Orders",
+        value: orderStats.todayOrders,
+        icon: <PackageOpen className="h-6 w-6" />,
+        color: "bg-green-500",
+      },
+      {
+        title: "Revenue Today",
+        value: `₱${orderStats.revenueToday.toFixed(2)}`,
+        icon: <PhilippinePeso className="h-6 w-6" />,
+        color: "bg-purple-500",
+      },
+      {
+        title: "Total Customers",
+        value: orderStats.totalCustomers,
+        icon: <Users className="h-6 w-6" />,
+        color: "bg-blue-500",
+      },
+    ];
+  }, [orderStats]);
 
   if (isLoading)
     return (
@@ -30,60 +62,17 @@ const OrderStatsSummary = () => {
 
   if (!orderStats) return null;
 
-  const summaryData = [
-    {
-      title: "Total Orders",
-      value: orderStats.totalOrders,
-      icon: Package,
-      bg: "bg-blue-100",
-      iconColor: "text-blue-600",
-    },
-    {
-      title: "Today's Orders",
-      value: orderStats.todayOrders,
-      icon: PackageOpen,
-      bg: "bg-green-100",
-      iconColor: "text-green-600",
-    },
-    {
-      title: "Revenue Today",
-      value: `₱${orderStats.revenueToday.toFixed(2)}`,
-      icon: PhilippinePeso,
-      bg: "bg-purple-100",
-      iconColor: "text-purple-600",
-    },
-    {
-      title: "Total Customers",
-      value: orderStats.totalCustomers,
-      icon: Users,
-      bg: "bg-blue-100",
-      iconColor: "text-blue-600",
-    },
-  ];
-
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-      {summaryData.map((stat) => {
-        const Icon = stat.icon;
-
-        return (
-          <div
-            key={stat.title}
-            className="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">{stat.title}</p>
-                <p className="text-2xl font-bold text-gray-800">{stat.value}</p>
-              </div>
-
-              <div
-                className={`w-12 h-12 rounded-lg flex items-center justify-center ${stat.bg}`}>
-                <Icon className={`h-6 w-6 ${stat.iconColor}`} />
-              </div>
-            </div>
-          </div>
-        );
-      })}
+      {summaryData.map((stat) => (
+        <SummaryStatCard
+          key={stat.title}
+          title={stat.title}
+          value={stat.value}
+          icon={stat.icon}
+          color={stat.color}
+        />
+      ))}
     </div>
   );
 };

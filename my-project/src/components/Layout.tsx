@@ -7,7 +7,7 @@ const Layout = () => {
       {/* Mobile Overlay */}
       <Sidebar />
 
-      <div className="flex-1 overflow-auto min-h-screen">
+      <div className="flex-1 overflow-auto min-h-screen pt-16 md:pt-0">
         <Outlet />
       </div>
     </div>

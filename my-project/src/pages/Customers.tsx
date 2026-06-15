@@ -1,5 +1,5 @@
 import { Users, Plus, Filter } from "lucide-react";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import CustomerModalForm from "../components/Customers/CustomerModalForm";
 import StatsSummaryCards from "../components/Customers/StatsSummaryCards";
 import CustomersTable from "../components/Customers/CustomersTable";
@@ -19,7 +19,7 @@ const Customers = () => {
     null
   );
 
-  const handleSelectCustomer = (
+  const handleSelectCustomer = useCallback((
     customer: CustomerType,
     action: "edit" | "delete" | "details"
   ) => {
@@ -33,23 +33,23 @@ const Customers = () => {
     } else {
       setIsDeleteModalOpen(true);
     }
-  };
+  }, []);
 
-  const closeCustomerFormModal = () => {
+  const closeCustomerFormModal = useCallback(() => {
     setIsCustomerFormModal(false);
     setIsEdit(false);
     setSelectedCustomer(null);
-  };
+  }, []);
 
-  const closeCustomerDetailsModal = () => {
+  const closeCustomerDetailsModal = useCallback(() => {
     setIsCustomerDetailsModal(false);
     setSelectedCustomer(null);
-  };
+  }, []);
 
-  const closeDeleteModal = () => {
+  const closeDeleteModal = useCallback(() => {
     setIsDeleteModalOpen(false);
     setSelectedCustomer(null);
-  };
+  }, []);
 
   return (
     <div className="min-h-screen p-4 md:p-6">
@@ -64,14 +64,19 @@ const Customers = () => {
               Manage your laundry shop customers and their information
             </p>
           </div>
-          <button
-            onClick={() => setIsCustomerFormModal(true)}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition flex items-center">
-            <Plus className="mr-2 h-4 w-4" />
-            Add New Customer
-          </button>
+          <div className="mt-4 md:mt-0 flex">
+            <button
+              onClick={() => setIsCustomerFormModal(true)}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition flex items-center">
+              <Plus className="mr-2 h-4 w-4" />
+              Add New Customer
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Stats Summary */}
+      <StatsSummaryCards />
 
       <CustomersTable handleSelectCustomer={handleSelectCustomer} />
 

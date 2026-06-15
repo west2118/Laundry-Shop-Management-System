@@ -42,7 +42,7 @@ const ReportRevenueOrdersChart = ({ startDate, endDate }: ReportRevenueOrdersCha
   if (isLoading || !dailySalesData) return <ReportChartSkeleton />;
   if (error) return <div className="text-red-500">Failed to load revenue trends.</div>;
 
-  const { chartData, totalRevenue } = dailySalesData;
+  const { chartData } = dailySalesData;
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">

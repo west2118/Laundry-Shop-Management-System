@@ -75,7 +75,7 @@ export const getCategoryBadge = (category: ServiceCategory) => {
     categoryConfig[category] || {
       color: "bg-gray-100 text-gray-800",
       icon: Package,
-      label: "Unknown",
+      label: category ? category.charAt(0).toUpperCase() + category.slice(1) : "Unknown",
     }
   );
 };

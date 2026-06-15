@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   Package,
   Clock,
@@ -19,7 +19,7 @@ const OrdersBoardPage = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
 
-  const handleSelectOrder = (
+  const handleSelectOrder = useCallback((
     order: OrderType,
     action: "edit" | "delete" | "details"
   ) => {
@@ -31,18 +31,18 @@ const OrdersBoardPage = () => {
     } else if (action === "details") {
       setIsOrderDetailsModalOpen(true);
     }
-  };
+  }, []);
 
-  const closeOrderFormModal = () => {
+  const closeOrderFormModal = useCallback(() => {
     setIsOrderFormModalOpen(false);
     setIsEdit(false);
     setSelectedOrder(null);
-  };
+  }, []);
 
-  const closeOrderDetailsModal = () => {
+  const closeOrderDetailsModal = useCallback(() => {
     setIsOrderDetailsModalOpen(false);
     setSelectedOrder(null);
-  };
+  }, []);
 
   const columns: OrderColumnType[] = [
     {

@@ -72,6 +72,16 @@ const OrderTableRow = ({ order, handleSelectOrder }: OrderTableRowProps) => {
         })}
       </td>
       <td className="py-4 px-6">
+        <div className="flex flex-col">
+          <span className="font-medium text-gray-900">
+            {order.createdBy?.firstName} {order.createdBy?.lastName}
+          </span>
+          <span className="text-xs text-gray-500">
+            {order.createdBy?.email}
+          </span>
+        </div>
+      </td>
+      <td className="py-4 px-6">
         <div className="flex items-center">
           <span className="font-bold text-gray-900">
             ₱{order.totalAmount.toFixed(2)}

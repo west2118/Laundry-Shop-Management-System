@@ -67,6 +67,19 @@ const OrderItem = ({
         </span>
       </div>
 
+      {/* Creator Info */}
+      <div className="flex items-center mb-3">
+        <div className="w-8 h-8 bg-blue-50 rounded-full flex items-center justify-center mr-2">
+          <User className="h-4 w-4 text-blue-400" />
+        </div>
+        <div className="flex flex-col">
+          <span className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Created By</span>
+          <span className="text-sm font-medium text-gray-900">
+            {order.createdBy?.firstName} {order.createdBy?.lastName}
+          </span>
+        </div>
+      </div>
+
       {/* Service Info */}
       {order.items.map((item) => {
         const { color, label } = getServiceBadge(item.serviceName);

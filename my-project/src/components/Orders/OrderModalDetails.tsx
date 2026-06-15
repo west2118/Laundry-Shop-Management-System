@@ -20,7 +20,7 @@ const OrderModalDetails = ({
       isModalOpen={isModalOpen}
       isCloseModal={isCloseModal}
       title="Order Details"
-      width="max-w-[40%]">
+      width="w-full max-w-lg md:max-w-xl lg:max-w-[40%]">
       <div className="flex items-start justify-between mb-6">
         <div className="flex-1">
           <h2 className="text-2xl font-bold text-gray-900">Order Details</h2>
@@ -51,6 +51,12 @@ const OrderModalDetails = ({
           <p className="text-sm text-gray-500">Customer</p>
           <p className="font-medium text-gray-900">
             {selectedOrder?.customer.fullName}
+          </p>
+        </div>
+        <div>
+          <p className="text-sm text-gray-500">Created By</p>
+          <p className="font-medium text-gray-900">
+            {selectedOrder?.createdBy?.firstName} {selectedOrder?.createdBy?.lastName}
           </p>
         </div>
         <div>
