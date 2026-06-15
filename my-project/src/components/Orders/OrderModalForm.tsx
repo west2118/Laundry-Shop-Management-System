@@ -20,9 +20,10 @@ import {
 import { useForm } from "../../hooks/useForm";
 import type { CustomerType, OrderType, ServiceType } from "../../lib/types";
 import OrderServiceItem from "./OrderServiceItem";
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { api } from "../../lib/axios";
 import { toast } from "react-toastify";
+import { useOrderMutation } from "../../hooks/useOrderMutation";
 
 type OrderModalFormProps = {
   isModalOpen: boolean;
@@ -200,71 +201,46 @@ const OrderModalForm = ({
     }));
   };
 
-  const mutation = useMutation({
-    mutationFn: async (formData: FormData) => {
-      if (!formData.customer) {
-        throw new Error("Please select a customer");
-      }
-      if (formData.customer === "new" && !formCustomerData.fullName) {
-        throw new Error("Please provide the new customer's full name");
-      }
-      if (formOrderData.items.some((i) => !i.service)) {
-        throw new Error("Please select a service for all items");
-      }
-      if (!formData.paymentStatus) {
-        throw new Error("Please select a payment status");
-      }
-      if (!formData.itemDescription) {
-        throw new Error("Please provide an item description");
-      }
-
-      let res;
-
-      const payload = {
-        customer:
-          formData.customer === "new" ? formCustomerData : formData.customer,
-        items: formOrderData.items,
-        itemDescription: formData.itemDescription,
-        specialInstructions: formData.specialInstructions,
-        paymentStatus: formData.paymentStatus,
-        discount: Number(formData.discount),
-        totalAmount,
-      };
-
-      if (isEdit) {
-        if (!selectedOrder) return;
-
-        res = await api.put(
-          `/order/${selectedOrder?._id}`,
-          payload
-        );
-      } else {
-        res = await api.post("/order", payload);
-      }
-
-      return res.data;
-    },
-    onSuccess: (response) => {
-      isCloseModal();
-      toast.success(response.message);
-      queryClient.invalidateQueries({ queryKey: ["order-stats-data"] });
-      queryClient.invalidateQueries({ queryKey: ["order-board-data"] });
-      queryClient.invalidateQueries({ queryKey: ["orders-data"] });
-      queryClient.invalidateQueries({ queryKey: ["order-today"] });
-      queryClient.invalidateQueries({ queryKey: ["report-stats"] });
-      queryClient.invalidateQueries({ queryKey: ["report-revenue-trend"] });
-      queryClient.invalidateQueries({ queryKey: ["report-most-services"] });
-      queryClient.invalidateQueries({ queryKey: ["customer-stats"] });
-      queryClient.invalidateQueries({ queryKey: ["service-stats"] });
-    },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.error || error.response?.data?.message || error.message || "Something went wrong");
-    },
+  const mutation = useOrderMutation({
+    onSuccessCallback: isCloseModal,
+    isEdit,
+    orderId: selectedOrder?._id,
   });
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
-    mutation.mutate(formData);
+    if (!formData.customer) {
+      toast.error("Please select a customer");
+      return;
+    }
+    if (formData.customer === "new" && !formCustomerData.fullName) {
+      toast.error("Please provide the new customer's full name");
+      return;
+    }
+    if (formOrderData.items.some((i) => !i.service)) {
+      toast.error("Please select a service for all items");
+      return;
+    }
+    if (!formData.paymentStatus) {
+      toast.error("Please select a payment status");
+      return;
+    }
+    if (!formData.itemDescription) {
+      toast.error("Please provide an item description");
+      return;
+    }
+
+    const payload = {
+      customer: formData.customer === "new" ? formCustomerData : formData.customer,
+      items: formOrderData.items,
+      itemDescription: formData.itemDescription,
+      specialInstructions: formData.specialInstructions,
+      paymentStatus: formData.paymentStatus,
+      discount: Number(formData.discount),
+      totalAmount,
+    };
+
+    mutation.mutate(payload);
   };
 
   return (

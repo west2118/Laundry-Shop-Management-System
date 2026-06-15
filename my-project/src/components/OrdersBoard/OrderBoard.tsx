@@ -108,6 +108,11 @@ const OrderBoard = ({
       queryClient.invalidateQueries({ queryKey: ["report-most-services"] });
       queryClient.invalidateQueries({ queryKey: ["customer-stats"] });
       queryClient.invalidateQueries({ queryKey: ["service-stats"] });
+      // Dashboard keys
+      queryClient.invalidateQueries({ queryKey: ["order-stats-weekly"] });
+      queryClient.invalidateQueries({ queryKey: ["order-service-weekly"] });
+      queryClient.invalidateQueries({ queryKey: ["order-daily-sales"] });
+      queryClient.invalidateQueries({ queryKey: ["order-recent"] });
     },
   });
 

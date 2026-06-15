@@ -58,18 +58,19 @@ const OrderTableRow = ({ order, handleSelectOrder }: OrderTableRowProps) => {
         </span>
       </td>
       <td className="py-4 px-6 space-y-2">
-        {order.items.map((item) => {
-          const { color, label } = getServiceBadge(item.serviceName);
-
-          return (
-            <div key={item._id} className="flex flex-col space-y-1">
-              <span
-                className={`px-2 py-1 rounded text-xs font-medium border ${color}`}>
-                {label}
-              </span>
-            </div>
-          );
-        })}
+        <div className="flex flex-col space-y-1 items-start">
+          {order.items.length > 0 && (
+            <span
+              className={`px-2 py-1 rounded text-xs font-medium border ${getServiceBadge(order.items[0].serviceName).color}`}>
+              {getServiceBadge(order.items[0].serviceName).label}
+            </span>
+          )}
+          {order.items.length > 1 && (
+            <span className="text-xs text-gray-500 font-medium">
+              +{order.items.length - 1} more service{order.items.length - 1 > 1 ? "s" : ""}
+            </span>
+          )}
+        </div>
       </td>
       <td className="py-4 px-6">
         <div className="flex flex-col">

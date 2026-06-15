@@ -13,6 +13,7 @@ import {
   CircuitBoard,
   Package2,
   LogOut,
+  ShoppingCart,
 } from "lucide-react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useUserStore } from "../stores/useUserStore";
@@ -43,6 +44,7 @@ const Sidebar = () => {
 
   const navItems = [
     { label: "Dashboard", icon: Home, to: `/${user?.role || "admin"}`, end: true, adminOnly: true },
+    { label: "Purchase Order", icon: ShoppingCart, to: "pos", adminOnly: false },
     { label: "Boards", icon: Package2, to: "orders-board", adminOnly: false },
     { label: "Orders", icon: Package, to: "orders", adminOnly: true },
     { label: "Customers", icon: Users, to: "customers", adminOnly: true },
@@ -57,17 +59,16 @@ const Sidebar = () => {
     <>
       {/* Backdrop for mobile */}
       {isMobileMenuOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-40 md:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
 
       {/* Sidebar container */}
-      <div 
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${
-          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+      <div
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200">
           <div className="flex items-center space-x-2">
@@ -150,7 +151,7 @@ const Sidebar = () => {
             <Activity className="h-6 w-6 text-blue-600" />
             <h1 className="text-xl font-bold text-blue-700">LaundryPro</h1>
           </div>
-          <button 
+          <button
             onClick={() => setIsMobileMenuOpen(true)}
             className="p-2 rounded-md text-gray-700">
             <Menu className="h-6 w-6" />

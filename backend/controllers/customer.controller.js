@@ -61,7 +61,7 @@ export const putCustomer = async (req, res) => {
   try {
     const { id: userId } = req.user;
     const { id } = req.params;
-    const { formData } = req.body;
+    const { fullName, email, contact } = req.body;
 
     const user = await User.findById(userId);
     if (!user) {
@@ -74,7 +74,7 @@ export const putCustomer = async (req, res) => {
     }
 
     const customerExist = await Customer.findOne({
-      fullName: formData.fullName,
+      fullName,
       _id: { $ne: id },
     });
     if (customerExist) {
@@ -83,7 +83,7 @@ export const putCustomer = async (req, res) => {
 
     const updatedCustomer = await Customer.findByIdAndUpdate(
       id,
-      { ...formData },
+      { fullName, email, contact },
       { new: true }
     );
 
