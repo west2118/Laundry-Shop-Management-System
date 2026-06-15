@@ -50,7 +50,12 @@ const LoginPage = () => {
 
         setAccessToken(response.data.accessToken);
         setUser(response.data.user);
-        navigate(`/${response.data.user.role}`);
+        
+        if (response.data.user.role === 'staff') {
+          navigate(`/${response.data.user.role}/pos`);
+        } else {
+          navigate(`/${response.data.user.role}`);
+        }
         toast.success(response.data.message || "Successfully logged in");
       } catch (error: any) {
         toast.error(error.response?.data?.message || error.message);

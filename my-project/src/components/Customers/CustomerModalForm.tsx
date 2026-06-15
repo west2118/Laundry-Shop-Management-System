@@ -50,7 +50,7 @@ const CustomerModalForm = ({
 
         res = await api.put(
           `/customer/${selectedCustomer?._id}`,
-          { formData }
+          formData
         );
       } else {
         res = await api.post(
@@ -66,8 +66,12 @@ const CustomerModalForm = ({
       toast.success(response.message);
       queryClient.invalidateQueries({ queryKey: ["customers"] });
     },
-    onError: () => {
-      toast.error("Something went wrong");
+    onError: (error: any) => {
+      toast.error(
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Something went wrong"
+      );
     },
   });
 

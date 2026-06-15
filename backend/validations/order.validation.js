@@ -15,8 +15,8 @@ export const createOrderSchema = z.object({
       z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid customer ID"),
       z.object({
         fullName: z.string().min(1),
-        email: z.string().email(),
-        contact: z.string().min(1),
+        email: z.string().email().optional().or(z.literal("")),
+        contact: z.string().min(1).optional().or(z.literal("")),
       })
     ]),
     items: z.array(orderItemSchema).min(1, "At least one item is required"),

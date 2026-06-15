@@ -20,6 +20,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import UsersPage from "./pages/Users";
 import RoleRoute from "./components/RoleRoute";
 import RoleParamRoute from "./components/RoleParamRoute";
+import POSPage from "./pages/POS";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -27,19 +28,22 @@ const router = createBrowserRouter(
       <Route element={<ProtectedRoute />}>
         <Route element={<RoleParamRoute />}>
           <Route path="/:role" element={<Layout />}>
-          <Route path="orders-board" element={<OrdersBoardPage />} />
-          
-          <Route element={<RoleRoute allowedRoles={["admin"]} />}>
-            <Route index element={<LaundryDashboard />} />
-            <Route path="customers" element={<Customers />} />
-            <Route path="orders" element={<OrdersPage />} />
-            <Route path="services" element={<ServicesPage />} />
-            <Route path="reports" element={<ReportsPage />} />
-            <Route path="users" element={<UsersPage />} />
+            <Route element={<RoleRoute allowedRoles={["admin", "staff"]} />}>
+              <Route path="orders-board" element={<OrdersBoardPage />} />
+              <Route path="pos" element={<POSPage />} />
+            </Route>
+
+            <Route element={<RoleRoute allowedRoles={["admin"]} />}>
+              <Route index element={<LaundryDashboard />} />
+              <Route path="customers" element={<Customers />} />
+              <Route path="orders" element={<OrdersPage />} />
+              <Route path="services" element={<ServicesPage />} />
+              <Route path="reports" element={<ReportsPage />} />
+              <Route path="users" element={<UsersPage />} />
+            </Route>
           </Route>
         </Route>
       </Route>
-    </Route>
 
       <Route path="/">
         <Route index element={<Navigate to="/login" replace />} />
