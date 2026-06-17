@@ -16,6 +16,7 @@ import RegisterPage from "./pages/Register";
 import LoginPage from "./pages/Login";
 import { useSyncInfo } from "./hooks/useSyncInfo";
 import OrdersBoardPage from "./pages/OrdersBoard";
+import ProfilePage from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import UsersPage from "./pages/Users";
 import RoleRoute from "./components/RoleRoute";
@@ -28,6 +29,7 @@ const router = createBrowserRouter(
         <Route element={<RoleParamRoute />}>
           <Route path="/:role" element={<Layout />}>
           <Route path="orders-board" element={<OrdersBoardPage />} />
+          <Route path="profile" element={<ProfilePage />} />
           
           <Route element={<RoleRoute allowedRoles={["admin"]} />}>
             <Route index element={<LaundryDashboard />} />

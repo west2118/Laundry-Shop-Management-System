@@ -49,6 +49,7 @@ const Sidebar = () => {
     { label: "Services", icon: Workflow, to: "services", adminOnly: true },
     { label: "Users", icon: User, to: "users", adminOnly: true },
     { label: "Reports", icon: BarChart3, to: "reports", adminOnly: true },
+    { label: "Profile", icon: Settings, to: "profile", adminOnly: false },
   ];
 
   const fullName = user ? `${user.firstName} ${user.lastName}` : "Loading...";
