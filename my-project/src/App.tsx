@@ -30,6 +30,8 @@ const router = createBrowserRouter(
         <Route element={<RoleParamRoute />}>
           <Route path="/:role" element={<Layout />}>
             <Route path="orders-board" element={<OrdersBoardPage />} />
+            <Route path="pos" element={<POSPage />} />
+            <Route path="profile" element={<ProfilePage />} />
 
             <Route element={<RoleRoute allowedRoles={["admin"]} />}>
               <Route index element={<LaundryDashboard />} />

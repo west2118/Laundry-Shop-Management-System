@@ -196,10 +196,6 @@ const OrderModalDetails = ({
           <Edit className="w-4 h-4 mr-2 text-gray-400 group-hover:text-blue-500 transition-colors" />
           Edit Order
         </button>
-        <button className="flex items-center justify-center px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-sm shadow-blue-600/20 transition-all active:scale-[0.98]">
-          <Printer className="w-4 h-4 mr-2" />
-          Print Receipt
-        </button>
       </div>
     </Modal>
   );

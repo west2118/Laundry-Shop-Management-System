@@ -89,20 +89,27 @@ const DashboardRecentOrders = () => {
                     </div>
                   </td>
                   <td className="py-4 px-6 space-y-2">
-                    {order.items.map((item) => {
-                      const { color, label } = getServiceBadge(
-                        item.serviceName
-                      );
+                    <div className="flex flex-wrap items-center gap-2">
+                      {order.items.slice(0, 1).map((item) => {
+                        const { color, label } = getServiceBadge(
+                          item.serviceName
+                        );
 
-                      return (
-                        <div key={item._id} className="flex flex-col space-y-1">
-                          <span
-                            className={`px-2 py-1 rounded text-xs font-medium border ${color}`}>
-                            {label}
-                          </span>
-                        </div>
-                      );
-                    })}
+                        return (
+                          <div key={item._id} className="flex flex-col space-y-1">
+                            <span
+                              className={`px-2 py-1 rounded text-xs font-medium border ${color}`}>
+                              {label}
+                            </span>
+                          </div>
+                        );
+                      })}
+                      {order.items.length > 1 && (
+                        <span className="text-xs text-gray-500 font-medium">
+                          +{order.items.length - 1} more
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="py-4 px-6">
                     <span
