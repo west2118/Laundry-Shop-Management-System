@@ -33,7 +33,7 @@ const OrderModalDetails = ({
       isCloseModal={isCloseModal}
       title="Order Information"
       width="w-full max-w-2xl">
-      
+
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4 border-b border-gray-100 pb-6 mt-2">
         <div>
@@ -48,12 +48,10 @@ const OrderModalDetails = ({
             {dateConvert(selectedOrder.createdAt)}
           </p>
         </div>
-
-        <div className="flex flex-col sm:items-end">
-           <span className={`px-3 py-1 text-[11px] font-bold uppercase tracking-wider rounded-full border ${selectedOrder.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-red-100 text-red-700 border-red-200'} mb-1`}>
-             Payment: {selectedOrder.paymentStatus}
-           </span>
-           <p className="text-3xl font-extrabold text-gray-900 tracking-tight">₱{selectedOrder.totalAmount.toFixed(2)}</p>
+        <div className="flex items-center space-x-2">
+          <span className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-medium">
+            {selectedOrder?.orderStatus}
+          </span>
         </div>
       </div>
 
@@ -88,7 +86,7 @@ const OrderModalDetails = ({
           <ShoppingBag className="w-5 h-5 text-gray-800" />
           <h3 className="text-lg font-bold text-gray-900 tracking-tight">Order Items</h3>
         </div>
-        
+
         <div className="bg-white border border-gray-200/80 rounded-2xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -124,20 +122,20 @@ const OrderModalDetails = ({
           </div>
 
           <div className="bg-gray-50/50 p-5 border-t border-gray-200/80 space-y-3">
-             <div className="flex justify-between text-sm font-medium text-gray-500 px-1">
-               <span>Subtotal</span>
-               <span className="text-gray-900">₱{(selectedOrder.totalAmount + selectedOrder.discount).toFixed(2)}</span>
-             </div>
-             {selectedOrder.discount > 0 && (
-               <div className="flex justify-between text-sm font-semibold text-emerald-600 px-1">
-                 <span className="flex items-center gap-1.5"><Tag className="w-4 h-4"/> Discount Applied</span>
-                 <span>- ₱{selectedOrder.discount.toFixed(2)}</span>
-               </div>
-             )}
-             <div className="flex justify-between text-lg pt-4 border-t border-gray-200/80 mt-2 px-1">
-               <span className="font-extrabold text-gray-900">Total Payable</span>
-               <span className="font-extrabold text-blue-600 text-xl tracking-tight">₱{selectedOrder.totalAmount.toFixed(2)}</span>
-             </div>
+            <div className="flex justify-between text-sm font-medium text-gray-500 px-1">
+              <span>Subtotal</span>
+              <span className="text-gray-900">₱{(selectedOrder.totalAmount + selectedOrder.discount).toFixed(2)}</span>
+            </div>
+            {selectedOrder.discount > 0 && (
+              <div className="flex justify-between text-sm font-semibold text-emerald-600 px-1">
+                <span className="flex items-center gap-1.5"><Tag className="w-4 h-4" /> Discount Applied</span>
+                <span>- ₱{selectedOrder.discount.toFixed(2)}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-lg pt-4 border-t border-gray-200/80 mt-2 px-1">
+              <span className="font-extrabold text-gray-900">Total Payable</span>
+              <span className="font-extrabold text-blue-600 text-xl tracking-tight">₱{selectedOrder.totalAmount.toFixed(2)}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -189,7 +187,7 @@ const OrderModalDetails = ({
 
       {/* Footer Buttons */}
       <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6 border-t border-gray-100">
-        <button 
+        <button
           onClick={isCloseModal}
           className="px-6 py-2.5 border border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors">
           Close
