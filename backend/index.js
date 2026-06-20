@@ -5,6 +5,8 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import mongoSanitize from "express-mongo-sanitize";
+import hpp from "hpp";
 
 dotenv.config({ path: ".env" });
 
@@ -15,6 +17,28 @@ app.use(cookieParser());
 
 // Security Middlewares
 app.use(helmet());
+
+// Data Sanitization against NoSQL query injection
+// Custom sanitization for Express 5 compatibility
+const sanitizeObject = (obj) => {
+  if (!obj || typeof obj !== 'object') return;
+  for (const key in obj) {
+    if (key.includes('$') || key.includes('.')) {
+      delete obj[key];
+    } else if (typeof obj[key] === 'object') {
+      sanitizeObject(obj[key]);
+    }
+  }
+};
+app.use((req, res, next) => {
+  sanitizeObject(req.body);
+  sanitizeObject(req.query);
+  sanitizeObject(req.params);
+  next();
+});
+
+// Prevent HTTP Parameter Pollution
+app.use(hpp());
 
 // Global Rate Limiter
 const globalLimiter = rateLimit({
@@ -47,3 +71,17 @@ app.use("/api/v1", userRoutes);
 app.use("/api/v1", serviceRoutes);
 app.use("/api/v1", customerRoutes);
 app.use("/api/v1", orderRoutes);
+
+// Global Error Handling Middleware
+app.use((err, req, res, next) => {
+  console.error("❌ Global Error:", err.stack);
+  
+  const statusCode = err.statusCode || 500;
+  const message = process.env.NODE_ENV === "production" ? "Internal Server Error" : err.message;
+
+  res.status(statusCode).json({
+    success: false,
+    message,
+    ...(process.env.NODE_ENV !== "production" && { stack: err.stack }),
+  });
+});

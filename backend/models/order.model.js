@@ -47,6 +47,13 @@ const OrderSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    voidRequest: { type: Boolean, default: false },
+    voidReason: { type: String },
+    voidedAt: { type: Date },
+    voidedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
   },
   { timestamps: true }
 );

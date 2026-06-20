@@ -44,6 +44,11 @@ export const getStatusBadge = (status: OrderStatus) => {
       icon: Truck,
       label: "Picked Up",
     },
+    voided: {
+      color: "bg-red-100 text-red-800",
+      icon: XCircle,
+      label: "Voided",
+    },
   };
 
   return (
@@ -137,3 +142,14 @@ export const pesoFormatter = new Intl.NumberFormat("en-PH", {
   currency: "PHP",
   minimumFractionDigits: 2,
 });
+
+export const formatCompactNumber = (number: number) => {
+  return new Intl.NumberFormat("en-PH", {
+    style: "currency",
+    currency: "PHP",
+    notation: "compact",
+    compactDisplay: "short",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(number);
+};

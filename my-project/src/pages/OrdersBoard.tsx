@@ -12,16 +12,18 @@ import OrderBoardStatsSummary from "../components/OrdersBoard/OrderBoardStatsSum
 import type { OrderColumnType, OrderType } from "../lib/types";
 import OrderModalDetails from "../components/Orders/OrderModalDetails";
 import OrderModalForm from "../components/Orders/OrderModalForm";
+import ModalVoidRequest from "../components/Orders/ModalVoidRequest";
 
 const OrdersBoardPage = () => {
   const [isOrderFormModalOpen, setIsOrderFormModalOpen] = useState(false);
   const [isOrderDetailsModalOpen, setIsOrderDetailsModalOpen] = useState(false);
+  const [isModalVoidRequestOpen, setIsModalVoidRequestOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
 
   const handleSelectOrder = useCallback((
     order: OrderType,
-    action: "edit" | "delete" | "details"
+    action: "edit" | "delete" | "details" | "request-void"
   ) => {
     setSelectedOrder(order);
 
@@ -30,6 +32,8 @@ const OrdersBoardPage = () => {
       setIsOrderFormModalOpen(true);
     } else if (action === "details") {
       setIsOrderDetailsModalOpen(true);
+    } else if (action === "request-void") {
+      setIsModalVoidRequestOpen(true);
     }
   }, []);
 
@@ -41,6 +45,11 @@ const OrdersBoardPage = () => {
 
   const closeOrderDetailsModal = useCallback(() => {
     setIsOrderDetailsModalOpen(false);
+    setSelectedOrder(null);
+  }, []);
+
+  const closeModalVoidRequest = useCallback(() => {
+    setIsModalVoidRequestOpen(false);
     setSelectedOrder(null);
   }, []);
 
@@ -123,6 +132,14 @@ const OrdersBoardPage = () => {
           isCloseModal={closeOrderFormModal}
           isEdit={isEdit}
           selectedOrder={selectedOrder ?? null}
+        />
+      )}
+
+      {isModalVoidRequestOpen && selectedOrder && (
+        <ModalVoidRequest
+          isModalOpen={isModalVoidRequestOpen}
+          isCloseModal={closeModalVoidRequest}
+          order={selectedOrder}
         />
       )}
     </div>

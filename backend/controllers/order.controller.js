@@ -123,6 +123,27 @@ export const getAllOrders = async (req, res) => {
   }
 };
 
+export const getVoidRequests = async (req, res) => {
+  try {
+    const { id: userId } = req.user;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(400).json({ message: "User didn't exist" });
+    }
+
+    const voidRequests = await Order.find({ voidRequest: true })
+      .populate("customer", "fullName email")
+      .populate("createdBy", "firstName lastName email")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(voidRequests);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 export const getAllOrdersBoard = async (req, res) => {
   try {
     const { id: userId } = req.user;
@@ -249,6 +270,81 @@ export const updateOrderStatus = async (req, res) => {
       .json({ message: "Order status updated successfully!", updatedOrder });
   } catch (error) {
     console.log(error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const requestVoidOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { voidReason } = req.body;
+
+    const order = await Order.findById(id);
+    if (!order) {
+      return res.status(400).json({ message: "Order didn't exist" });
+    }
+
+    const updatedOrder = await Order.findByIdAndUpdate(
+      id,
+      { voidRequest: true, voidReason },
+      { new: true }
+    );
+
+    res.status(200).json({ message: "Void requested successfully!", updatedOrder });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const approveVoidOrder = async (req, res) => {
+  try {
+    const { id: userId } = req.user;
+    const { id } = req.params;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(400).json({ message: "User didn't exist" });
+    }
+
+    const order = await Order.findById(id);
+    if (!order) {
+      return res.status(400).json({ message: "Order didn't exist" });
+    }
+
+    const updatedOrder = await Order.findByIdAndUpdate(
+      id,
+      {
+        orderStatus: "voided",
+        voidRequest: false,
+        voidedAt: Date.now(),
+        voidedBy: userId,
+      },
+      { new: true }
+    );
+
+    res.status(200).json({ message: "Order voided successfully!", updatedOrder });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const rejectVoidOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const order = await Order.findById(id);
+    if (!order) {
+      return res.status(400).json({ message: "Order didn't exist" });
+    }
+
+    const updatedOrder = await Order.findByIdAndUpdate(
+      id,
+      { voidRequest: false, voidReason: null },
+      { new: true }
+    );
+
+    res.status(200).json({ message: "Void request rejected!", updatedOrder });
+  } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };

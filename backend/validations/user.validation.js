@@ -25,3 +25,10 @@ export const getByIdSchema = z.object({
     id: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ID"),
   }),
 });
+
+export const changePasswordSchema = z.object({
+  body: z.object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: z.string().min(6, "New password must be at least 6 characters"),
+  }),
+});

@@ -18,3 +18,9 @@ export const updateCustomerSchema = z.object({
     contact: z.string().min(1, "Contact is required").max(20).optional().or(z.literal("")),
   }),
 });
+
+export const deleteCustomerSchema = z.object({
+  params: z.object({
+    id: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ID"),
+  }),
+});

@@ -1,4 +1,4 @@
-import { Check, Edit, FileText, Printer, ShoppingBag, User, Calendar, Receipt, CreditCard, Clock, CheckCircle2, Package, Tag, AlertCircle } from "lucide-react";
+import { Check, Edit, FileText, Printer, ShoppingBag, User, Calendar, CheckCircle2, Package, Tag, AlertCircle } from "lucide-react";
 import React from "react";
 import Modal from "../UI/Modal";
 import type { OrderType } from "../../lib/types";
@@ -16,6 +16,7 @@ const getStatusColor = (status?: string) => {
     case "in-process": return "bg-blue-100 text-blue-700 border-blue-200";
     case "ready": return "bg-indigo-100 text-indigo-700 border-indigo-200";
     case "picked-up": return "bg-green-100 text-green-700 border-green-200";
+    case "voided": return "bg-red-100 text-red-700 border-red-200";
     default: return "bg-gray-100 text-gray-700 border-gray-200";
   }
 };
@@ -47,11 +48,6 @@ const OrderModalDetails = ({
             <Calendar className="w-4 h-4 text-gray-400" />
             {dateConvert(selectedOrder.createdAt)}
           </p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <span className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-medium">
-            {selectedOrder?.orderStatus}
-          </span>
         </div>
       </div>
 
@@ -141,8 +137,26 @@ const OrderModalDetails = ({
       </div>
 
       {/* Additional Details */}
-      {(selectedOrder.itemDescription || selectedOrder.specialInstructions) && (
+      {(selectedOrder.itemDescription || selectedOrder.specialInstructions || selectedOrder.orderStatus === "voided") && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          {selectedOrder.orderStatus === "voided" && selectedOrder.voidReason && (
+            <div className="bg-red-50/50 border border-red-200/60 p-4.5 rounded-2xl md:col-span-2">
+              <div className="flex items-center gap-2 mb-3 text-red-800">
+                <AlertCircle className="w-4.5 h-4.5" />
+                <h4 className="font-bold text-[11px] uppercase tracking-wider">Void Information</h4>
+              </div>
+              <div className="ml-1 text-sm font-medium text-red-900/80">
+                <p className="mb-1"><span className="font-bold text-red-800">Reason:</span> {selectedOrder.voidReason}</p>
+                {selectedOrder.voidedAt && (
+                  <p className="text-xs text-red-700/70 mt-2 flex items-center">
+                    <Calendar className="w-3.5 h-3.5 mr-1" />
+                    Voided on {dateConvert(selectedOrder.voidedAt)}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
           {selectedOrder.itemDescription && (
             <div className="bg-amber-50/50 border border-amber-200/60 p-4.5 rounded-2xl">
               <div className="flex items-center gap-2 mb-3 text-amber-800">
@@ -191,10 +205,6 @@ const OrderModalDetails = ({
           onClick={isCloseModal}
           className="px-6 py-2.5 border border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors">
           Close
-        </button>
-        <button className="flex items-center justify-center px-6 py-2.5 border border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 hover:text-blue-600 transition-colors group">
-          <Edit className="w-4 h-4 mr-2 text-gray-400 group-hover:text-blue-500 transition-colors" />
-          Edit Order
         </button>
       </div>
     </Modal>

@@ -4,7 +4,7 @@ import {
   Users,
 } from "lucide-react";
 import React from "react";
-import { pesoFormatter } from "../../lib/utils";
+import { pesoFormatter, formatCompactNumber } from "../../lib/utils";
 import SummaryStatCard from "../UI/SummaryStatCard";
 import ReportStatsSkeleton from "../SkeletonLoading/ReportStatsSkeleton";
 
@@ -33,7 +33,7 @@ const ReportStatsMetrics = ({ startDate, endDate }: ReportStatsMetricsProps) => 
     {
       id: "total-revenue",
       title: "Total Revenue",
-      value: pesoFormatter.format(reportStats.totalRevenue),
+      value: formatCompactNumber(reportStats.totalRevenue),
       subtitle: "Selected Range",
       icon: <PhilippinePeso className="h-5 w-5" />,
       color: "bg-purple-500",
@@ -49,7 +49,7 @@ const ReportStatsMetrics = ({ startDate, endDate }: ReportStatsMetricsProps) => 
     {
       id: "aov",
       title: "Avg Order Value",
-      value: pesoFormatter.format(reportStats.aovData),
+      value: formatCompactNumber(reportStats.aovData),
       subtitle: "Selected Range",
       icon: <PhilippinePeso className="h-5 w-5" />,
       color: "bg-green-500",

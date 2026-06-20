@@ -1,9 +1,8 @@
 import React, { useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Search } from "lucide-react";
+import { Search, AlertCircle } from "lucide-react";
 import type { OrderType } from "../../lib/types";
 import { fetchData } from "../../lib/utils";
-import { useUserStore } from "../../stores/useUserStore";
 import { useDebounceInput } from "../../hooks/useDebounceInput";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import Pagination from "../Pagination";
@@ -12,8 +11,8 @@ import TableOrderRowSkeleton from "../SkeletonLoading/TableOrderRowSkeleton";
 
 type OrderTableProps = {
   handleSelectOrder: (
-    order: OrderType,
-    action: "edit" | "delete" | "details"
+    order: OrderType | null,
+    action: "edit" | "delete" | "details" | "void-requests"
   ) => void;
 };
 
@@ -70,8 +69,6 @@ const OrderTable = ({ handleSelectOrder }: OrderTableProps) => {
     placeholderData: keepPreviousData,
   });
 
-  console.log("ordersData", ordersData);
-
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mt-6">
       <div className="px-6 py-4 border-b border-gray-200">
@@ -83,6 +80,12 @@ const OrderTable = ({ handleSelectOrder }: OrderTableProps) => {
             </p>
           </div>
           <div className="mt-3 md:mt-0 flex items-center space-x-3">
+            <button
+              onClick={() => handleSelectOrder(null, "void-requests")}
+              className="flex items-center px-4 py-2 bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 rounded-lg transition font-medium text-sm whitespace-nowrap">
+              <AlertCircle className="w-4 h-4 mr-2" />
+              Void Requests
+            </button>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}

@@ -10,7 +10,7 @@ import {
 import { verifyToken } from "../middleware/verifyToken.js";
 import { verifyAdmin } from "../middleware/verifyRole.js";
 import validate from "../middleware/validate.middleware.js";
-import { createCustomerSchema, updateCustomerSchema } from "../validations/customer.validation.js";
+import { createCustomerSchema, updateCustomerSchema, deleteCustomerSchema } from "../validations/customer.validation.js";
 
 const router = express.Router();
 
@@ -19,6 +19,6 @@ router.post("/customer", verifyToken, verifyAdmin, validate(createCustomerSchema
 router.get("/customer", verifyToken, getCustomers);
 router.get("/customers", verifyToken, getAllCustomers);
 router.put("/customer/:id", verifyToken, verifyAdmin, validate(updateCustomerSchema), putCustomer);
-router.delete("/customer/:id", verifyToken, verifyAdmin, deleteCustomer);
+router.delete("/customer/:id", verifyToken, verifyAdmin, validate(deleteCustomerSchema), deleteCustomer);
 
 export default router;

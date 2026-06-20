@@ -37,7 +37,7 @@ const Modal = ({
         onClick={(e) => e.stopPropagation()}
         className={`bg-white rounded-xl shadow-lg w-full ${width} max-h-[90vh] overflow-y-auto hide-scrollbar`}>
         <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
 
             <button

@@ -64,7 +64,7 @@ export type CreatorInfo = {
   email?: string;
 };
 
-export type OrderStatus = "pending" | "in-process" | "ready" | "picked-up";
+export type OrderStatus = "pending" | "in-process" | "ready" | "picked-up" | "voided";
 
 export type OrderType = {
   _id: string;
@@ -79,6 +79,10 @@ export type OrderType = {
   totalAmount: number;
   createdAt: string;
   updatedAt: string;
+  voidRequest?: boolean;
+  voidReason?: string;
+  voidedAt?: string;
+  voidedBy?: string;
   __v: number;
 };
 

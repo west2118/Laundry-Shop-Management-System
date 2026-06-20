@@ -7,9 +7,10 @@ import { registerSchema, loginSchema } from "../validations/auth.validation.js";
 const router = express.Router();
 
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  limit: 10, // Limit each IP to 10 requests per windowMs
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  limit: 3, // Limit each IP to 3 requests per windowMs
   message: { message: "Too many login attempts, please try again later." },
+  skipSuccessfulRequests: true, // Only count failed login attempts
 });
 
 router.post("/register", validate(registerSchema), register);

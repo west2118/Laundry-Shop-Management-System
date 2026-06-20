@@ -10,13 +10,14 @@ import {
 import type { OrderType } from "../../lib/types";
 import { dateConvert } from "../../lib/contants";
 import { getServiceBadge, getStatusBadge } from "../../lib/utils";
+import { useUserStore } from "../../stores/useUserStore";
 
 type OrderItemProps = {
   order: OrderType;
   handleDragStart: any;
   handleSelectOrder: (
     order: OrderType,
-    action: "edit" | "delete" | "details"
+    action: "edit" | "delete" | "details" | "request-void"
   ) => void;
 };
 
@@ -25,6 +26,7 @@ const OrderItem = ({
   handleDragStart,
   handleSelectOrder,
 }: OrderItemProps) => {
+  const user = useUserStore((state) => state.user);
   const { color, icon: StatusIcon, label } = getStatusBadge(order.orderStatus);
 
   return (
@@ -102,14 +104,30 @@ const OrderItem = ({
         <div className="flex space-x-1">
           <button
             onClick={() => handleSelectOrder(order, "details")}
-            className="p-1 text-blue-600 hover:bg-blue-50 rounded transition">
+            className="p-1 text-blue-600 hover:bg-blue-50 rounded transition"
+            title="View Details">
             <Eye className="h-4 w-4" />
           </button>
-          <button
-            onClick={() => handleSelectOrder(order, "edit")}
-            className="p-1 text-green-600 hover:bg-green-50 rounded transition">
-            <Edit className="h-4 w-4" />
-          </button>
+          {user?.role === "admin" ? (
+            <button
+              onClick={() => handleSelectOrder(order, "edit")}
+              className="p-1 text-green-600 hover:bg-green-50 rounded transition"
+              title="Edit Order">
+              <Edit className="h-4 w-4" />
+            </button>
+          ) : (
+            <button
+              onClick={() => handleSelectOrder(order, "request-void")}
+              disabled={order.voidRequest}
+              className={`p-1 transition rounded ${
+                order.voidRequest
+                  ? "text-gray-400 cursor-not-allowed bg-gray-100"
+                  : "text-red-500 hover:bg-red-50"
+              }`}
+              title={order.voidRequest ? "Void Requested" : "Request Void"}>
+              <Trash className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </div>
 

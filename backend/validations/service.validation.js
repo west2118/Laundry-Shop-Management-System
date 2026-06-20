@@ -27,3 +27,9 @@ export const updateServiceSchema = z.object({
     status: z.enum(["active", "inactive"]).optional(),
   }),
 });
+
+export const deleteServiceSchema = z.object({
+  params: z.object({
+    id: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ID"),
+  }),
+});

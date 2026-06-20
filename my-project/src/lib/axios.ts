@@ -49,8 +49,7 @@ api.interceptors.response.use(
       } catch (refreshError) {
         removeAccessToken();
         if (
-          window.location.pathname !== '/login' &&
-          window.location.pathname !== '/register'
+          window.location.pathname !== '/login'
         ) {
           window.location.href = '/login';
         }

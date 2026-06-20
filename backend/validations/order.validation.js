@@ -37,3 +37,18 @@ export const updateOrderStatusSchema = z.object({
     paymentStatus: z.enum(["pending", "paid"]).optional(),
   }),
 });
+
+export const validateOrderIdSchema = z.object({
+  params: z.object({
+    id: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ID"),
+  }),
+});
+
+export const requestVoidSchema = z.object({
+  params: z.object({
+    id: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ID"),
+  }),
+  body: z.object({
+    voidReason: z.string().min(1, "Reason is required"),
+  }),
+});

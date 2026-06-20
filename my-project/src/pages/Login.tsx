@@ -58,7 +58,11 @@ const LoginPage = () => {
         }
         toast.success(response.data.message || "Successfully logged in");
       } catch (error: any) {
-        toast.error(error.response?.data?.message || error.message);
+        if (error.response?.data?.errors?.length > 0) {
+          toast.error(`${error.response.data.message}: ${error.response.data.errors[0].message}`);
+        } else {
+          toast.error(error.response?.data?.message || error.message);
+        }
       }
     });
   };
@@ -160,14 +164,7 @@ const LoginPage = () => {
                 <span>Sign in</span>
               </button>
 
-              <p className="text-center text-gray-600">
-                Don't have an account?{" "}
-                <Link
-                  to="/register"
-                  className="text-cyan-600 hover:text-cyan-700 font-semibold transition-colors">
-                  Create an account
-                </Link>
-              </p>
+
             </form>
           </div>
         </div>
